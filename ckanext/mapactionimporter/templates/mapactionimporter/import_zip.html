@@ -1,0 +1,12 @@
+{% extends 'package/base_form_page.html' %}
+
+{% block subtitle %}{{ _('Import MapAction Zip File') }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li>{% link_for _('Datasets'), controller='package', action='search' %}</li>
+  <li class="active"><a href="">{{ _('Import MapAction Zip File') }}</a></li></a></li>
+{% endblock %}
+
+{% block form %}
+  {% snippet 'mapactionimporter/snippets/import_zip_form.html', data=data, errors=errors, error_summary=error_summary %}
+{% endblock %}
