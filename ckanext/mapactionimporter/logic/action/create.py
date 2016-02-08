@@ -24,6 +24,11 @@ def create_dataset_from_zip(context, data_dict):
     et = parse(metadata_file)
 
     dataset_dict = {}
+
+    owner_org = data_dict.get('owner_org')
+    if owner_org:
+        dataset_dict['owner_org'] = owner_org
+
     title_lines = et.find('.//mapdata/title').text.splitlines()
     dataset_dict['title'] = ' '.join(title_lines)
 
