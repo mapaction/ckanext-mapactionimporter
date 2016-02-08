@@ -15,3 +15,6 @@ class ZipImportController(toolkit.BaseController):
                 'error_summary': error_summary,
             }
         )
+
+    def import_dataset(self):
+        pass

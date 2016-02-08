@@ -24,7 +24,7 @@ class MapactionimporterPlugin(plugins.SingletonPlugin):
         map_.connect(
             'import_mapactionzip',
             '/import_mapactionzip',
-            controller='ckanext.datapackager.controllers.zipimport:ZipImportController',
+            controller='ckanext.mapactionimporter.controllers.zipimport:ZipImportController',
             action='import_dataset',
             conditions=dict(method=['POST']),
         )
