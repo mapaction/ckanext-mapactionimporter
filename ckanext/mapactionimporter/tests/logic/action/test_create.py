@@ -22,11 +22,8 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
 
         resources = dataset['resources']
 
-        import pdb; pdb.set_trace()
-
         nose.tools.assert_true(len(resources) == 2)
         nose.tools.assert_equal(resources[0]['url_type'], 'upload')
-        #nose.tools.assert_true(resources[0]['name'] in resources[0]['url'])
 
 
 class _UploadFile(object):
