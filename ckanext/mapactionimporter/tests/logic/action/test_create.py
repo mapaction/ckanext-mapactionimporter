@@ -36,6 +36,13 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                                       'MA001_Aptivate_Example-300dpi.pdf',
                                       'ma001aptivateexample-300dpi.pdf')
 
+    def test_dataset_public_when_no_organization_specified(self):
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=_UploadFile(custom_helpers.get_test_file()))
+
+        nose.tools.assert_false(dataset['private'])
+
     def _check_uploaded_resource(self, resource, expected_format,
                                  expected_name,
                                  expected_basename):
