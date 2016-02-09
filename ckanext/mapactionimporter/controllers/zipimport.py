@@ -37,7 +37,7 @@ class ZipImportController(toolkit.BaseController):
                     params,
                 )
             toolkit.redirect_to(controller='package',
-                                action='read',
+                                action='edit',
                                 id=dataset['name'])
         except toolkit.ValidationError as e:
             errors = e.error_dict

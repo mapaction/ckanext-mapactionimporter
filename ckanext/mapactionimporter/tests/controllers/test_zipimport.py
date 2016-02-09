@@ -39,7 +39,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         assert_equals(response.status_int, 302)
         assert_regexp_matches(
             response.headers['Location'],
-            '/dataset/%s' % slug)
+            '/dataset/edit/%s' % slug)
 
         # Should create the dataset
         dataset = helpers.call_action('package_show', id=slug)
