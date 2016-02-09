@@ -12,6 +12,8 @@ import ckan.plugins.toolkit as toolkit
 
 def create_dataset_from_zip(context, data_dict):
     upload = data_dict.get('upload')
+    private = data_dict.get('private', True)
+
     map_package = upload.file
 
     tempdir = tempfile.mkdtemp('-mapactionzip')
@@ -37,11 +39,14 @@ def create_dataset_from_zip(context, data_dict):
     owner_org = data_dict.get('owner_org')
     if owner_org:
         dataset_dict['owner_org'] = owner_org
+    else:
+        private = False
 
     title_lines = et.find('.//mapdata/title').text.splitlines()
     dataset_dict['title'] = ' '.join(title_lines)
 
     dataset_dict['name'] = slugify(et.find('.//mapdata/ref').text)
+    dataset_dict['private'] = private
     dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
     for resource_file in file_paths:

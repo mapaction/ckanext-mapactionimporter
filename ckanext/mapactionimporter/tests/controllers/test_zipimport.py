@@ -15,10 +15,19 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
     def test_import_zipfile(self):
         slug = 'ma001-aptivate-example'
         user = factories.User()
+        organization = factories.Organization(user=user)
+
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         url = toolkit.url_for('import_mapactionzip')
+
+        params = {
+            'private': True,
+            'owner_org': organization['id'],
+        }
+
         response = self.app.post(
             url,
+            params,
             extra_environ=env,
             upload_files=[(
                 'upload',
@@ -35,3 +44,4 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         # Should create the dataset
         dataset = helpers.call_action('package_show', id=slug)
         assert_equals(dataset['name'], slug)
+        assert_equals(dataset['private'], True)
