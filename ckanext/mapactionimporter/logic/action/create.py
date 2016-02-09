@@ -72,6 +72,7 @@ def _create_and_upload_resource(context, resource, the_file):
     resource['url'] = 'url'
     resource['url_type'] = 'upload'
     resource['upload'] = _UploadLocalFileStorage(the_file)
+    resource['name'] = os.path.basename(the_file.name)
     toolkit.get_action('resource_create')(context, resource)
 
 

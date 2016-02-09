@@ -25,19 +25,22 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
 
         self._check_uploaded_resource(sorted_resources[0],
                                       'JPEG',
+                                      'MA001_Aptivate_Example-300dpi.jpeg',
                                       'ma001aptivateexample-300dpi.jpeg')
         self._check_uploaded_resource(sorted_resources[1],
                                       'PDF',
+                                      'MA001_Aptivate_Example-300dpi.pdf',
                                       'ma001aptivateexample-300dpi.pdf')
 
     def _check_uploaded_resource(self, resource, expected_format,
+                                 expected_name,
                                  expected_basename):
         nose.tools.assert_equal(resource['url_type'], 'upload')
         nose.tools.assert_equal(resource['format'], expected_format)
+        nose.tools.assert_equal(resource['name'], expected_name)
 
         basename = resource['url'].split('/')[-1]
         nose.tools.assert_equal(basename, expected_basename)
-
 
 
 class _UploadFile(object):
