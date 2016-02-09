@@ -15,6 +15,10 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
             dataset['title'],
             'Central African Republic:  Example Map- Reference (as of 3 Feb 2099)')
 
+        nose.tools.assert_equal(
+            dataset['name'],
+            '189-ma001-aptivate-example')
+
         # Expect the JPEG And PDF referenced in the XML Metadata
         dataset = helpers.call_action('package_show', id=dataset['id'])
         resources = dataset['resources']

@@ -13,7 +13,6 @@ assert_regexp_matches = nose.tools.assert_regexp_matches
 class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
 
     def test_import_zipfile(self):
-        slug = 'ma001-aptivate-example'
         user = factories.User()
         organization = factories.Organization(user=user)
 
@@ -37,6 +36,8 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
 
         # Should redirect to dataset's page
         assert_equals(response.status_int, 302)
+
+        slug = '189-ma001-aptivate-example'
         assert_regexp_matches(
             response.headers['Location'],
             '/dataset/edit/%s' % slug)
