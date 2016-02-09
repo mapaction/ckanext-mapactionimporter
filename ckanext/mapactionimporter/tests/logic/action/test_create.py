@@ -22,8 +22,10 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
         # Expect the JPEG And PDF referenced in the XML Metadata
         dataset = helpers.call_action('package_show', id=dataset['id'])
         resources = dataset['resources']
+        extras = dataset['extras']
 
         nose.tools.assert_true(len(resources) == 2)
+        nose.tools.assert_true(len(extras) > 0)
 
         sorted_resources = sorted(resources, key=lambda k: k['format'])
 
