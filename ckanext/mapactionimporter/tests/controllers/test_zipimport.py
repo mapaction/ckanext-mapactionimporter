@@ -9,8 +9,8 @@ assert_equals = nose.tools.assert_equals
 assert_true = nose.tools.assert_true
 assert_regexp_matches = nose.tools.assert_regexp_matches
 
-class TestDataPackageController(
-    custom_helpers.FunctionalTestBaseClass):
+
+class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
 
     def test_import_zipfile(self):
         slug = 'ma001-aptivate-example'
@@ -22,7 +22,7 @@ class TestDataPackageController(
             extra_environ=env,
             upload_files=[(
                 'upload',
-                 custom_helpers.get_test_file().name,
+                custom_helpers.get_test_file().name,
             )],
         )
 
@@ -35,4 +35,3 @@ class TestDataPackageController(
         # Should create the dataset
         dataset = helpers.call_action('package_show', id=slug)
         assert_equals(dataset['name'], slug)
-
