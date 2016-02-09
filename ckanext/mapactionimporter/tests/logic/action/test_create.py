@@ -1,5 +1,4 @@
 import nose.tools
-import os
 
 import ckan.tests.helpers as helpers
 import ckanext.mapactionimporter.tests.helpers as custom_helpers
@@ -17,13 +16,28 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
             'Central African Republic:  Example Map- Reference (as of 3 Feb 2099)')
 
         # Expect the JPEG And PDF referenced in the XML Metadata
-
         dataset = helpers.call_action('package_show', id=dataset['id'])
-
         resources = dataset['resources']
 
         nose.tools.assert_true(len(resources) == 2)
-        nose.tools.assert_equal(resources[0]['url_type'], 'upload')
+
+        sorted_resources = sorted(resources, key=lambda k: k['format'])
+
+        self._check_uploaded_resource(sorted_resources[0],
+                                      'JPEG',
+                                      'ma001aptivateexample-300dpi.jpeg')
+        self._check_uploaded_resource(sorted_resources[1],
+                                      'PDF',
+                                      'ma001aptivateexample-300dpi.pdf')
+
+    def _check_uploaded_resource(self, resource, expected_format,
+                                 expected_basename):
+        nose.tools.assert_equal(resource['url_type'], 'upload')
+        nose.tools.assert_equal(resource['format'], expected_format)
+
+        basename = resource['url'].split('/')[-1]
+        nose.tools.assert_equal(basename, expected_basename)
+
 
 
 class _UploadFile(object):
