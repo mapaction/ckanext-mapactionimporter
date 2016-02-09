@@ -49,6 +49,10 @@ def create_dataset_from_zip(context, data_dict):
     operation_id = et.find('.//mapdata/operationID').text
     dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
     dataset_dict['private'] = private
+    dataset_dict['extras'] = [
+        {'key': e.tag, 'value': e.text} for e in et.findall('./mapdata/*')
+            if e.text and e.tag not in ('title,')  # Reserved field
+        ]
     dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
     for resource_file in file_paths:
