@@ -9,6 +9,10 @@ import zipfile
 
 import ckan.plugins.toolkit as toolkit
 
+def join_lines(text):
+    """ Return input text without newlines """
+    return ' '.join(text.splitlines())
+
 
 def create_dataset_from_zip(context, data_dict):
     upload = data_dict.get('upload')
@@ -42,12 +46,11 @@ def create_dataset_from_zip(context, data_dict):
     else:
         private = False
 
-    title_lines = et.find('.//mapdata/title').text.splitlines()
-    dataset_dict['title'] = ' '.join(title_lines)
-
+    dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
     map_id = et.find('.//mapdata/ref').text
     operation_id = et.find('.//mapdata/operationID').text
     dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
+    dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
     dataset_dict['private'] = private
     dataset_dict['extras'] = [
         {'key': e.tag, 'value': e.text} for e in et.findall('./mapdata/*')

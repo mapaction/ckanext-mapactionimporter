@@ -42,8 +42,16 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             upload=_UploadFile(custom_helpers.get_test_file()))
-
         nose.tools.assert_false(dataset['private'])
+
+    def test_dataset_notes_set_to_xml_summary(self):
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=_UploadFile(custom_helpers.get_test_file()))
+
+        summary = ("Example reference map of the Central African Republic.  This "
+                   "is an example map only and for testing use only")
+        nose.tools.assert_equal(dataset['notes'], summary)
 
     def _check_uploaded_resource(self, resource, expected_format,
                                  expected_name,
