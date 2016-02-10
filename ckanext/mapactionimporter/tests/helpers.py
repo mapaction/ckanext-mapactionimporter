@@ -4,10 +4,18 @@ import ckan.config.middleware
 import pylons.config as config
 import webtest
 
-def get_test_file():
-    return file(os.path.join(
-        os.path.split(__file__)[0],
-        './test-data/MA001_Aptivate_Example.zip'))
+
+def get_test_xml():
+    return get_test_file('MA001_Aptivate_Example.xml')
+
+
+def get_test_zip():
+    return get_test_file('MA001_Aptivate_Example.zip')
+
+
+def get_test_file(filename):
+    return file(os.path.join(os.path.split(__file__)[0],
+        './test-data/', filename))
 
 def _get_test_app():
     '''Return a webtest.TestApp for CKAN, with legacy templates disabled.

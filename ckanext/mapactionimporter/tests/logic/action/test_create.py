@@ -9,7 +9,7 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
     def test_it_allows_uploading_a_zipfile(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=_UploadFile(custom_helpers.get_test_file()))
+            upload=_UploadFile(custom_helpers.get_test_zip()))
 
         nose.tools.assert_equal(
             dataset['title'],
@@ -41,13 +41,13 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
     def test_dataset_public_when_no_organization_specified(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=_UploadFile(custom_helpers.get_test_file()))
+            upload=_UploadFile(custom_helpers.get_test_zip()))
         nose.tools.assert_false(dataset['private'])
 
     def test_dataset_notes_set_to_xml_summary(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=_UploadFile(custom_helpers.get_test_file()))
+            upload=_UploadFile(custom_helpers.get_test_zip()))
 
         summary = ("Example reference map of the Central African Republic.  This "
                    "is an example map only and for testing use only")
