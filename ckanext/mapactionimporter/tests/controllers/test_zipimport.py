@@ -20,7 +20,6 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         url = toolkit.url_for('import_mapactionzip')
 
         params = {
-            'private': True,
             'owner_org': organization['id'],
         }
 
