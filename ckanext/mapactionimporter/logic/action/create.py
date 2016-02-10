@@ -9,6 +9,8 @@ import zipfile
 
 import ckan.plugins.toolkit as toolkit
 
+from ckanext.mapactionimporter.lib import metadataimporter
+
 def join_lines(text):
     """ Return input text without newlines """
     return ' '.join(text.splitlines())
@@ -53,9 +55,9 @@ def create_dataset_from_zip(context, data_dict):
     dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
     dataset_dict['private'] = private
     dataset_dict['extras'] = [
-        {'key': e.tag, 'value': e.text} for e in et.findall('./mapdata/*')
-            if e.text and e.tag not in ('title,')  # Reserved field
-        ]
+        {'key': k, 'value': v} for (k, v) in
+            metadataimporter.map_metadata_to_ckan_extras(et).items()
+    ]
     dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
     for resource_file in file_paths:
