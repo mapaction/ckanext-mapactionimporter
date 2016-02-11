@@ -7,11 +7,16 @@ from slugify import slugify
 import tempfile
 import zipfile
 
+from ckan.common import _
 import ckan.plugins.toolkit as toolkit
 
 
 def create_dataset_from_zip(context, data_dict):
     upload = data_dict.get('upload')
+    if not _upload_attribute_is_valid(upload):
+        msg = {'file': [_('You must select a file to be imported')]}
+        raise toolkit.ValidationError(msg)
+
     private = data_dict.get('private', True)
 
     map_package = upload.file
@@ -63,6 +68,10 @@ def create_dataset_from_zip(context, data_dict):
         _create_and_upload_local_resource(context, resource)
 
     return dataset
+
+
+def _upload_attribute_is_valid(upload):
+    return hasattr(upload, 'file') and hasattr(upload.file, 'read')
 
 
 def _create_and_upload_local_resource(context, resource):

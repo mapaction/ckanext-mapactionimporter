@@ -2,6 +2,7 @@ import nose.tools
 
 import ckan.tests.helpers as helpers
 import ckanext.mapactionimporter.tests.helpers as custom_helpers
+import ckan.plugins.toolkit as toolkit
 
 
 class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
@@ -54,6 +55,17 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
 
         basename = resource['url'].split('/')[-1]
         nose.tools.assert_equal(basename, expected_basename)
+
+    def test_it_raises_if_no_zip_file(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=u''
+            )
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'File':
+                                  'You must select a file to be imported'})
 
 
 class _UploadFile(object):
