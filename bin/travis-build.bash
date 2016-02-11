@@ -27,6 +27,13 @@ cd ckan
 paster db init -c test-core.ini
 cd -
 
+echo "Configure storage_path"
+sudo mkdir -p /var/lib/ckan_test
+sudo chmod 777 /var/lib/ckan_test
+cd ckan
+paster config-tool -s app:main test-core.ini 'ckan.storage_path=/var/lib/ckan_test'
+cd -
+
 echo "Installing ckanext-mapactionimporter and its requirements..."
 python setup.py develop
 pip install -r dev-requirements.txt

@@ -20,7 +20,6 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         url = toolkit.url_for('import_mapactionzip')
 
         params = {
-            'private': True,
             'owner_org': organization['id'],
         }
 
@@ -30,7 +29,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
             extra_environ=env,
             upload_files=[(
                 'upload',
-                custom_helpers.get_test_file().name,
+                custom_helpers.get_test_zip().name,
             )],
         )
 
