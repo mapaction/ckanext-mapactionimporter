@@ -53,6 +53,12 @@ def _load_plugin(plugin):
     config['ckan.plugins'] = ' '.join(plugins)
 
 
+class _UploadFile(object):
+    '''Mock the parts from cgi.FileStorage we use.'''
+    def __init__(self, fp):
+        self.file = fp
+
+
 class FunctionalTestBaseClass():
     '''A base class for functional test classes to inherit from.
 
