@@ -96,6 +96,16 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                                  {'File':
                                   'File is not a zip file'})
 
+    def test_it_raises_if_no_metadata(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_zip_no_metadata()))
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'File':
+                                  'Could not find metadata XML in zip file'})
+
 
 class _UploadFile(object):
     '''Mock the parts from cgi.FileStorage we use.'''

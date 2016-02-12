@@ -81,7 +81,9 @@ def _load_and_validate_map_package(upload):
     except zipfile.BadZipfile:
         raise MapPackageException(_('File is not a zip file'))
 
-    assert len(metadata_paths) == 1
+    if len(metadata_paths) == 0:
+        raise MapPackageException(_('Could not find metadata XML in zip file'))
+
     map_package['metadata_file'] =  metadata_paths[0]
     map_package['file_paths'] = file_paths
 
