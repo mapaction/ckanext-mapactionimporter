@@ -52,7 +52,8 @@ def to_dataset(map_package):
 
 
     # Expect a single metadata file
-    assert len(metadata_paths) == 1
+    if len(metadata_paths) == 0:
+        raise MapPackageException(_('Could not find metadata XML in zip file'))
     metadata_file = metadata_paths[0]
 
     et = parse(metadata_file)
