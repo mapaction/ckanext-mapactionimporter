@@ -54,15 +54,13 @@ def create_dataset_from_zip(context, data_dict):
 
 
 def _load_and_validate_map_package(upload):
-    return upload.file
+    map_package = {}
 
-
-def map_package_to_dataset_dict(map_package):
     tempdir = tempfile.mkdtemp('-mapactionzip')
 
     metadata_paths = []
     file_paths = []
-    with zipfile.ZipFile(map_package, 'r') as z:
+    with zipfile.ZipFile(upload.file, 'r') as z:
         z.extractall(tempdir)
         for f in z.namelist():
             full_path = os.path.join(tempdir, f)
@@ -72,11 +70,16 @@ def map_package_to_dataset_dict(map_package):
                 file_paths.append(full_path)
 
     assert len(metadata_paths) == 1
-    metadata_file = metadata_paths[0]
+    map_package['metadata_file'] =  metadata_paths[0]
+    map_package['file_paths'] = file_paths
 
-    et = parse(metadata_file)
+    return map_package
 
+
+def map_package_to_dataset_dict(map_package):
     dataset_dict = {}
+
+    et = parse(map_package['metadata_file'])
 
     dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
     map_id = et.find('.//mapdata/ref').text
@@ -88,7 +91,7 @@ def map_package_to_dataset_dict(map_package):
         metadataimporter.map_metadata_to_ckan_extras(et).items()
     ]
 
-    dataset_dict['file_paths'] = file_paths
+    dataset_dict['file_paths'] = map_package['file_paths']
 
     return dataset_dict
 
