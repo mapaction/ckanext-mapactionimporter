@@ -13,6 +13,10 @@ import ckan.plugins.toolkit as toolkit
 from ckanext.mapactionimporter.lib import metadataimporter
 
 
+class MapPackageException(Exception):
+    pass
+
+
 def join_lines(text):
     """ Return input text without newlines """
     return ' '.join(text.splitlines())
@@ -26,7 +30,12 @@ def create_dataset_from_zip(context, data_dict):
 
     private = data_dict.get('private', True)
 
-    map_package = _load_and_validate_map_package(upload)
+    try:
+        map_package = _load_and_validate_map_package(upload)
+    except (MapPackageException) as e:
+        msg = {'file': [e.args[0]]}
+        raise toolkit.ValidationError(msg)
+
     dataset_dict = map_package_to_dataset_dict(map_package)
 
     file_paths = dataset_dict.get('file_paths', [])
@@ -60,14 +69,17 @@ def _load_and_validate_map_package(upload):
 
     metadata_paths = []
     file_paths = []
-    with zipfile.ZipFile(upload.file, 'r') as z:
-        z.extractall(tempdir)
-        for f in z.namelist():
-            full_path = os.path.join(tempdir, f)
-            if f.endswith('.xml'):
-                metadata_paths.append(full_path)
-            else:
-                file_paths.append(full_path)
+    try:
+        with zipfile.ZipFile(upload.file, 'r') as z:
+            z.extractall(tempdir)
+            for f in z.namelist():
+                full_path = os.path.join(tempdir, f)
+                if f.endswith('.xml'):
+                    metadata_paths.append(full_path)
+                else:
+                    file_paths.append(full_path)
+    except zipfile.BadZipfile:
+        raise MapPackageException(_('File is not a zip file'))
 
     assert len(metadata_paths) == 1
     map_package['metadata_file'] =  metadata_paths[0]
