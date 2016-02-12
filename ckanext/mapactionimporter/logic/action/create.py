@@ -12,6 +12,7 @@ import ckan.plugins.toolkit as toolkit
 
 from ckanext.mapactionimporter.lib import metadataimporter
 
+
 def join_lines(text):
     """ Return input text without newlines """
     return ' '.join(text.splitlines())
@@ -25,8 +26,38 @@ def create_dataset_from_zip(context, data_dict):
 
     private = data_dict.get('private', True)
 
-    map_package = upload.file
+    map_package = _load_and_validate_map_package(upload)
+    dataset_dict = map_package_to_dataset_dict(map_package)
 
+    file_paths = dataset_dict.get('file_paths', [])
+    if file_paths:
+        del dataset_dict['file_paths']
+
+    owner_org = data_dict.get('owner_org')
+    if owner_org:
+        dataset_dict['owner_org'] = owner_org
+    else:
+        private = False
+
+    dataset_dict['private'] = private
+
+    dataset = toolkit.get_action('package_create')(context, dataset_dict)
+
+    for resource_file in file_paths:
+        resource = {
+            'package_id': dataset['id'],
+            'path': resource_file,
+        }
+        _create_and_upload_local_resource(context, resource)
+
+    return dataset
+
+
+def _load_and_validate_map_package(upload):
+    return upload.file
+
+
+def map_package_to_dataset_dict(map_package):
     tempdir = tempfile.mkdtemp('-mapactionzip')
 
     metadata_paths = []
@@ -47,32 +78,19 @@ def create_dataset_from_zip(context, data_dict):
 
     dataset_dict = {}
 
-    owner_org = data_dict.get('owner_org')
-    if owner_org:
-        dataset_dict['owner_org'] = owner_org
-    else:
-        private = False
-
     dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
     map_id = et.find('.//mapdata/ref').text
     operation_id = et.find('.//mapdata/operationID').text
     dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
     dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
-    dataset_dict['private'] = private
     dataset_dict['extras'] = [
         {'key': k, 'value': v} for (k, v) in
-            metadataimporter.map_metadata_to_ckan_extras(et).items()
+        metadataimporter.map_metadata_to_ckan_extras(et).items()
     ]
-    dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
-    for resource_file in file_paths:
-        resource = {
-            'package_id': dataset['id'],
-            'path': resource_file,
-        }
-        _create_and_upload_local_resource(context, resource)
+    dataset_dict['file_paths'] = file_paths
 
-    return dataset
+    return dataset_dict
 
 
 def _upload_attribute_is_valid(upload):
