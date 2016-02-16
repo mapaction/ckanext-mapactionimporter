@@ -43,7 +43,8 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
 
         # Should create the dataset
         dataset = helpers.call_action('package_show', id=slug)
-        assert_equals(dataset['name'], slug)
+        assert_equals(dataset['title'],
+                      'Central African Republic:  Example Map- Reference (as of 3 Feb 2099)')
         assert_equals(dataset['private'], True)
 
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
