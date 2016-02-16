@@ -47,9 +47,17 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         assert_equals(dataset['private'], True)
 
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
-    def test_cannot_create_dataset_without_access(self):
+    def test_cannot_display_form_without_access(self):
         user = factories.User()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         url = toolkit.url_for('import_mapactionzip')
         response = self.app.get(url, extra_environ=env, status=[401])
+        assert_true('Unauthorized to create a dataset' in response.body)
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_cannot_create_dataset_without_access(self):
+        user = factories.User()
+        env = {'REMOTE_USER': user['name'].encode('ascii')}
+        url = toolkit.url_for('import_mapactionzip')
+        response = self.app.post(url, extra_environ=env, status=[401])
         assert_true('Unauthorized to create a dataset' in response.body)
