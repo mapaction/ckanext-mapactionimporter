@@ -83,7 +83,7 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
             )
 
         nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'File':
+                                 {'Upload':
                                   'You must select a file to be imported'})
 
     def test_it_raises_if_not_a_zip_file(self):

@@ -10,7 +10,7 @@ from ckanext.mapactionimporter.lib import mappackage
 def create_dataset_from_zip(context, data_dict):
     upload = data_dict.get('upload')
     if not _upload_attribute_is_valid(upload):
-        msg = {'file': [_('You must select a file to be imported')]}
+        msg = {'upload': [_('You must select a file to be imported')]}
         raise toolkit.ValidationError(msg)
 
     private = data_dict.get('private', True)
