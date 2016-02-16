@@ -4,6 +4,14 @@ import ckan.plugins.toolkit as toolkit
 
 class ZipImportController(toolkit.BaseController):
     def new(self, data=None, errors=None, error_summary=None):
+        context = {
+            'model': model,
+            'session': model.Session,
+            'user': toolkit.c.user,
+            'auth_user_obj': toolkit.c.userobj,
+        }
+        self._authorize_or_abort(context)
+
         errors = errors or {}
         error_summary = error_summary or {}
 
