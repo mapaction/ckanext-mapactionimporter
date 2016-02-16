@@ -15,10 +15,7 @@ class ZipImportController(toolkit.BaseController):
         errors = errors or {}
         error_summary = error_summary or {}
 
-        default_data = {
-            'owner_org': toolkit.request.params.get('group'),
-        }
-        data = data or default_data
+        data = data or {}
 
         return toolkit.render(
             'mapactionimporter/import_zip.html',
