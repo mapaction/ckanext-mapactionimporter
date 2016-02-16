@@ -93,7 +93,7 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                 upload=_UploadFile(custom_helpers.get_not_zip()))
 
         nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'File':
+                                 {'Upload':
                                   'File is not a zip file'})
 
     def test_it_raises_if_no_metadata(self):
@@ -103,7 +103,7 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                 upload=_UploadFile(custom_helpers.get_zip_no_metadata()))
 
         nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'File':
+                                 {'Upload':
                                   'Could not find metadata XML in zip file'})
 
 
