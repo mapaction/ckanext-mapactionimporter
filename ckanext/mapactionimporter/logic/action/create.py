@@ -1,6 +1,5 @@
 import os
 import cgi
-import random
 
 from ckan.common import _
 import ckan.plugins.toolkit as toolkit
