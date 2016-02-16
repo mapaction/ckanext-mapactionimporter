@@ -48,15 +48,8 @@ def _upload_attribute_is_valid(upload):
 def _create_and_upload_local_resource(context, resource):
     path = resource['path']
     del resource['path']
-    try:
-        with open(path, 'r') as the_file:
-            _create_and_upload_resource(context, resource, the_file)
-    except IOError:
-        msg = {'datapackage': [(
-            "Couldn't create some of the resources."
-            " Please make sure that all resources' files are accessible."
-        )]}
-        raise toolkit.ValidationError(msg)
+    with open(path, 'r') as the_file:
+        _create_and_upload_resource(context, resource, the_file)
 
 
 def _create_and_upload_resource(context, resource, the_file):
