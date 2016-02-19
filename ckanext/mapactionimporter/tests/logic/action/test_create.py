@@ -7,6 +7,21 @@ import ckan.plugins.toolkit as toolkit
 
 
 class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
+    def setup(self):
+        super(TestCreateDatasetFromZip, self).setup()
+        self.user = factories.User()
+
+
+class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
+    def setup(self):
+        super(TestCreateDatasetForEvent, self).setup()
+        self.group_189 = factories.Group(name='00189', user=self.user)
+
+        helpers.call_action(
+            'group_member_create',
+            id=self.group_189['id'],
+            username=self.user['name'],
+            role='editor')
 
     def test_it_allows_uploading_a_zipfile(self):
         dataset = helpers.call_action(
@@ -41,11 +56,10 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                                       'ma001aptivateexample-300dpi.pdf')
 
     def test_dataset_private_when_organization_specified(self):
-        user = factories.User()
-        organization = factories.Organization(user=user)
+        organization = factories.Organization(user=self.user)
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            context={'user': user['id']},
+            context={'user': self.user['id']},
             upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
             owner_org=organization['id'])
         nose.tools.assert_true(dataset['private'])
@@ -105,6 +119,35 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
         nose.tools.assert_equals(cm.exception.error_summary,
                                  {'Upload':
                                   'Could not find metadata XML in zip file'})
+
+    def test_it_attaches_to_event_with_operation_id_from_metadata(self):
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            context={'user': self.user['name']},
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+        )
+
+        dataset = helpers.call_action(
+            'package_show',
+            context={'user': self.user['name']},
+            id=dataset['id'])
+        events = dataset['groups']
+
+        nose.tools.assert_equals(len(events), 1)
+        nose.tools.assert_equals(events[0]['name'], '00189')
+
+
+class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
+    def test_it_raises_if_event_does_not_exist(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equals(cm.exception.error_summary, {
+            'Upload':
+            "Event with operationID '00189' does not exist",
+        })
 
 
 class _UploadFile(object):

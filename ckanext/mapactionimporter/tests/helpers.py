@@ -63,7 +63,7 @@ class _UploadFile(object):
         self.file = fp
 
 
-class FunctionalTestBaseClass():
+class FunctionalTestBaseClass(object):
     '''A base class for functional test classes to inherit from.
 
     This handles loading the mapactionimporter plugin and resetting the CKAN config
