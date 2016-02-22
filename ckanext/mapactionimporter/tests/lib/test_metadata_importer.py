@@ -18,4 +18,3 @@ class TestMetadataImporter(unittest.TestCase):
 
     def test_title_excluded(self):
         self.assertNotIn('title', self.extras_dict)
-

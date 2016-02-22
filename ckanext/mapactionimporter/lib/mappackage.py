@@ -50,7 +50,6 @@ def to_dataset(map_package):
     except zipfile.BadZipfile:
         raise MapPackageException(_('File is not a zip file'))
 
-
     # Expect a single metadata file
     if len(metadata_paths) == 0:
         raise MapPackageException(_('Could not find metadata XML in zip file'))
@@ -58,6 +57,12 @@ def to_dataset(map_package):
 
     et = parse(metadata_file)
 
+    dataset_dict = populate_dataset_dict_from_xml(et)
+
+    return (dataset_dict, file_paths)
+
+
+def populate_dataset_dict_from_xml(et):
     # Extract key metadata
     dataset_dict = {}
     dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
@@ -69,7 +74,7 @@ def to_dataset(map_package):
     dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
     dataset_dict['extras'] = [
         {'key': k, 'value': v} for (k, v) in
-            map_metadata_to_ckan_extras(et).items()
+        map_metadata_to_ckan_extras(et).items()
     ]
 
-    return (dataset_dict, file_paths)
+    return dataset_dict
