@@ -6,7 +6,7 @@ from defusedxml.ElementTree import parse
 from ckanext.mapactionimporter.lib import mappackage
 
 
-class TestMetadataImporter(unittest.TestCase):
+class TestMapMetadataToCkanExtras(unittest.TestCase):
 
     def setUp(self):
         et = parse(custom_helpers.get_test_xml())
