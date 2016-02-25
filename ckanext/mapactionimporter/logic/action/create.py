@@ -34,8 +34,9 @@ def create_dataset_from_zip(context, data_dict):
     operation_id = custom_dict['operationID'].zfill(5)
 
     try:
-        toolkit.get_action('group_show')(context,
-                                         data_dict={'id': operation_id})
+        toolkit.get_action('group_show')(
+            context,
+            data_dict={'type': 'event', 'id': operation_id})
     except (logic.NotFound) as e:
         msg = {'upload': [_("Event with operationID '{0}' does not exist").format(
             operation_id)]}
