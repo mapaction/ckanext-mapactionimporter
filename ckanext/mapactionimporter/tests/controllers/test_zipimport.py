@@ -15,6 +15,12 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
     def test_import_zipfile(self):
         user = factories.User()
         organization = factories.Organization(user=user)
+        group_189 = factories.Group(name='00189', user=user)
+        helpers.call_action(
+            'group_member_create',
+            id=group_189['id'],
+            username=user['name'],
+            role='editor')
 
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         url = toolkit.url_for('import_mapactionzip')

@@ -2,6 +2,7 @@ import os
 import cgi
 
 from ckan.common import _
+import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
 
 from ckanext.mapactionimporter.lib import mappackage
@@ -29,6 +30,22 @@ def create_dataset_from_zip(context, data_dict):
 
     dataset_dict['private'] = private
 
+    custom_dict = _get_custom_dict(dataset_dict)
+    operation_id = custom_dict['operationID'].zfill(5)
+
+    try:
+        toolkit.get_action('group_show')(
+            context,
+            data_dict={'type': 'event', 'id': operation_id})
+    except (logic.NotFound) as e:
+        msg = {'upload': [_("Event with operationID '{0}' does not exist").format(
+            operation_id)]}
+        raise toolkit.ValidationError(msg)
+
+    # TODO:
+    # If we do this, we get an error "User foo not authorized to edit these groups
+    # dataset_dict['groups'] = [{'name': operation_id]
+
     dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
     for resource_file in file_paths:
@@ -38,7 +55,19 @@ def create_dataset_from_zip(context, data_dict):
         }
         _create_and_upload_local_resource(context, resource)
 
+    toolkit.get_action('member_create')(context, {
+        'id': operation_id,
+        'object': dataset['id'],
+        'object_type': 'package',
+        'capacity': 'member',  # TODO: What does capacity mean in this context?
+    })
+
     return dataset
+
+
+def _get_custom_dict(dataset_dict):
+    # CKAN expects custom keys to be unique
+    return {c['key']: c['value'] for c in dataset_dict['extras']}
 
 
 def _upload_attribute_is_valid(upload):
