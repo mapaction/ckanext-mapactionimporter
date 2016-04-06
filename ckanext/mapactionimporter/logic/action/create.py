@@ -55,7 +55,7 @@ def create_dataset_from_zip(context, data_dict):
     except toolkit.ValidationError as e:
         if _('That URL is already in use.') in e.error_dict.get('name', []):
             e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
-            raise e
+        raise e
 
     try:
         for resource_file in file_paths:
