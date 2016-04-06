@@ -18,7 +18,7 @@ def create_dataset_from_zip(context, data_dict):
     private = data_dict.get('private', True)
 
     try:
-        dataset_dict, file_paths = mappackage.to_dataset(upload.file)
+        dataset_dict, file_paths, operation_id = mappackage.to_dataset(upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
@@ -32,7 +32,7 @@ def create_dataset_from_zip(context, data_dict):
     dataset_dict['private'] = private
 
     custom_dict = _get_custom_dict(dataset_dict)
-    operation_id = custom_dict['operationID'].zfill(5)
+    operation_id = operation_id.zfill(5)
 
     try:
         toolkit.get_action('group_show')(
@@ -49,7 +49,13 @@ def create_dataset_from_zip(context, data_dict):
 
     final_name = dataset_dict['name']
     dataset_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
-    dataset = toolkit.get_action('package_create')(context, dataset_dict)
+
+    try:
+        dataset = toolkit.get_action('package_create')(context, dataset_dict)
+    except toolkit.ValidationError as e:
+        if _('That URL is already in use.') in e.error_dict.get('name', []):
+            e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
+            raise e
 
     try:
         for resource_file in file_paths:

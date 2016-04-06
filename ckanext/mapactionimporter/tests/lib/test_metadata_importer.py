@@ -18,3 +18,6 @@ class TestMapMetadataToCkanExtras(unittest.TestCase):
 
     def test_title_excluded(self):
         self.assertNotIn('title', self.extras_dict)
+
+    def test_operationID_excluded(self):
+        self.assertNotIn('operationID', self.extras_dict)

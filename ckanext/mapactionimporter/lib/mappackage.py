@@ -11,6 +11,7 @@ from slugify import slugify
 EXCLUDE_TAGS = (
     'status',
     'title',
+    'operationID',
 )
 
 
@@ -58,8 +59,9 @@ def to_dataset(map_package):
     et = parse(metadata_file)
 
     dataset_dict = populate_dataset_dict_from_xml(et)
+    operation_id = et.find('.//mapdata/operationID').text
 
-    return (dataset_dict, file_paths)
+    return (dataset_dict, file_paths, operation_id)
 
 
 def populate_dataset_dict_from_xml(et):
