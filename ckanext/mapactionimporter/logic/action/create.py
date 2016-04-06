@@ -1,5 +1,6 @@
 import os
 import cgi
+import uuid
 
 from ckan.common import _
 import ckan.logic as logic
@@ -46,14 +47,20 @@ def create_dataset_from_zip(context, data_dict):
     # If we do this, we get an error "User foo not authorized to edit these groups
     # dataset_dict['groups'] = [{'name': operation_id]
 
+    final_name = dataset_dict['name']
+    dataset_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
     dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
-    for resource_file in file_paths:
-        resource = {
-            'package_id': dataset['id'],
-            'path': resource_file,
-        }
-        _create_and_upload_local_resource(context, resource)
+    try:
+        for resource_file in file_paths:
+            resource = {
+                'package_id': dataset['id'],
+                'path': resource_file,
+            }
+            _create_and_upload_local_resource(context, resource)
+    except:
+        toolkit.get_action('package_delete')(context, {'id': dataset['id']})
+        raise
 
     toolkit.get_action('member_create')(context, {
         'id': operation_id,
@@ -61,6 +68,11 @@ def create_dataset_from_zip(context, data_dict):
         'object_type': 'package',
         'capacity': 'member',  # TODO: What does capacity mean in this context?
     })
+
+    dataset_dict = toolkit.get_action('package_show')(
+        context, {'id': dataset['id']})
+    dataset_dict['name'] = final_name
+    dataset = toolkit.get_action('package_update')(context, dataset_dict)
 
     return dataset
 

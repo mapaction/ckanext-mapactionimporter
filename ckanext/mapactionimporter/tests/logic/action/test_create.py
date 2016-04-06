@@ -120,6 +120,31 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
                                  {'Upload':
                                   'Could not find metadata XML in zip file'})
 
+    def test_it_tidies_up_if_resource_creation_fails(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_zip_resource_too_large()))
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'Upload':
+                                  'File upload too large'})
+
+        datasets = helpers.call_action(
+            'package_list',
+            context={'user': self.user['name']})
+
+        # The dataset will be in the trash so won't appear here
+        nose.tools.assert_equals(len(datasets), 0)
+
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=_UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equal(
+            dataset['name'],
+            '189-ma001-aptivate-example')
+
     def test_it_attaches_to_event_with_operation_id_from_metadata(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
