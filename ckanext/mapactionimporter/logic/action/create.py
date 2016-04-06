@@ -17,7 +17,7 @@ def create_dataset_from_zip(context, data_dict):
     private = data_dict.get('private', True)
 
     try:
-        dataset_dict, file_paths = mappackage.to_dataset(upload.file)
+        dataset_dict, file_paths, operation_id = mappackage.to_dataset(upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
@@ -31,7 +31,7 @@ def create_dataset_from_zip(context, data_dict):
     dataset_dict['private'] = private
 
     custom_dict = _get_custom_dict(dataset_dict)
-    operation_id = custom_dict['operationID'].zfill(5)
+    operation_id = operation_id.zfill(5)
 
     try:
         toolkit.get_action('group_show')(
