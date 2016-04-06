@@ -4,6 +4,7 @@ import ckan.tests.helpers as helpers
 import ckan.tests.factories as factories
 import ckanext.mapactionimporter.tests.helpers as custom_helpers
 import ckan.plugins.toolkit as toolkit
+import ckan.lib.uploader as uploader
 
 
 class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
@@ -121,10 +122,13 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
                                   'Could not find metadata XML in zip file'})
 
     def test_it_tidies_up_if_resource_creation_fails(self):
+        old_max_resource_size = uploader._max_resource_size
+        uploader._max_resource_size = 1
+
         with nose.tools.assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_zip_resource_too_large()))
+                upload=_UploadFile(custom_helpers.get_test_zip()))
 
         nose.tools.assert_equals(cm.exception.error_summary,
                                  {'Upload':
@@ -136,6 +140,8 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         # The dataset will be in the trash so won't appear here
         nose.tools.assert_equals(len(datasets), 0)
+
+        uploader._max_resource_size = old_max_resource_size
 
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
