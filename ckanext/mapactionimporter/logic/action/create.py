@@ -45,8 +45,12 @@ def create_dataset_from_zip(context, data_dict):
     # TODO:
     # If we do this, we get an error "User foo not authorized to edit these groups
     # dataset_dict['groups'] = [{'name': operation_id]
-
-    dataset = toolkit.get_action('package_create')(context, dataset_dict)
+    try:
+        dataset = toolkit.get_action('package_create')(context, dataset_dict)
+    except toolkit.ValidationError as e:
+        if _('That URL is already in use.') in e.error_dict.get('name', []):
+            e.error_dict['name'] = [_('"%s" already exists.' % dataset_dict['name'])]
+            raise e
 
     for resource_file in file_paths:
         resource = {
