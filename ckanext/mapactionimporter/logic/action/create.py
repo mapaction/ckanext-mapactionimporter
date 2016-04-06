@@ -31,7 +31,6 @@ def create_dataset_from_zip(context, data_dict):
 
     dataset_dict['private'] = private
 
-    custom_dict = _get_custom_dict(dataset_dict)
     operation_id = operation_id.zfill(5)
 
     try:
@@ -81,11 +80,6 @@ def create_dataset_from_zip(context, data_dict):
     dataset = toolkit.get_action('package_update')(context, dataset_dict)
 
     return dataset
-
-
-def _get_custom_dict(dataset_dict):
-    # CKAN expects custom keys to be unique
-    return {c['key']: c['value'] for c in dataset_dict['extras']}
 
 
 def _upload_attribute_is_valid(upload):
