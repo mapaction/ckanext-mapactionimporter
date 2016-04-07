@@ -56,7 +56,10 @@ def to_dataset(map_package):
         raise MapPackageException(_('Could not find metadata XML in zip file'))
     metadata_file = metadata_paths[0]
 
-    et = parse(metadata_file)
+    try:
+        et = parse(metadata_file)
+    except (Exception) as e:
+        raise MapPackageException(e)
 
     dataset_dict = populate_dataset_dict_from_xml(et)
     operation_id = et.find('.//mapdata/operationID').text
