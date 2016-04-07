@@ -58,7 +58,6 @@ def create_product_themes():
                 tags.remove(tag)
             else:
                 data = {'name': tag, 'vocabulary_id': vocab['id'], 'display_name': "Foo"}
-                import sys; print >>sys.stderr, tag
                 toolkit.get_action('tag_create')(context, data)
         for tag in tags:
             data = {'name': tag, 'vocabulary_id': vocab['id']}
@@ -77,7 +76,7 @@ def product_themes(query=None):
         product_themes = tag_list(data_dict={'vocabulary_id': 'product_themes', 'all_fields': True, 'query': query})
         return product_themes
     except toolkit.ObjectNotFound:
-        return None
+        return []
 
 
 class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):

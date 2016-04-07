@@ -31,6 +31,6 @@ class MapactionImporterCommand(toolkit.CkanCommand):
         self._load_config()
 
         if cmd == 'create_product_themes':
-            create_product_themes
+            create_product_themes()
         else:
             print self.__doc__
