@@ -1,4 +1,5 @@
-from ckantoolkit import CkanCommand
+import ckan.plugins.toolkit as toolkit
+
 import paste.script
 
 from ckanext.mapactionimporter.plugin import (
@@ -6,7 +7,7 @@ from ckanext.mapactionimporter.plugin import (
 )
 
 
-class MapactionImporterCommand(CkanCommand):
+class MapactionImporterCommand(toolkit.CkanCommand):
     """
     ckanext-mapactionimporter management commands
 
