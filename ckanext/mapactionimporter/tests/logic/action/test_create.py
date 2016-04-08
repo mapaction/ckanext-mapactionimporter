@@ -151,10 +151,16 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
             dataset['name'],
             '189-ma001-aptivate-example')
 
-    def test_it_tidies_up_if_file_has_special_characters(self):
-        dataset = helpers.call_action(
-            'create_dataset_from_mapaction_zip',
-            upload=_UploadFile(custom_helpers.get_special_characters_zip()))
+    def test_it_raises_if_file_has_special_characters(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_special_characters_zip()))
+
+        nose.tools.assert_equals(cm.exception.error_summary, {
+            'Upload':
+            "Error parsing XML: 'not well-formed (invalid token): line 22, column 47'",
+        })
 
     def test_it_attaches_to_event_with_operation_id_from_metadata(self):
         dataset = helpers.call_action(

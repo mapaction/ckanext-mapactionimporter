@@ -5,7 +5,7 @@ import zipfile
 
 from ckan.common import _
 
-from defusedxml.ElementTree import parse
+from defusedxml.ElementTree import parse, ParseError
 from slugify import slugify
 
 EXCLUDE_TAGS = (
@@ -56,7 +56,11 @@ def to_dataset(map_package):
         raise MapPackageException(_('Could not find metadata XML in zip file'))
     metadata_file = metadata_paths[0]
 
-    et = parse(metadata_file)
+    try:
+        et = parse(metadata_file)
+    except ParseError as e:
+        raise MapPackageException(_("Error parsing XML: '{0}'".format(
+            e.msg.args[0])))
 
     dataset_dict = populate_dataset_dict_from_xml(et)
     operation_id = et.find('.//mapdata/operationID').text
