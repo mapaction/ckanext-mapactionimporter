@@ -1,5 +1,6 @@
 import os
 
+import logging
 import tempfile
 import zipfile
 
@@ -8,12 +9,41 @@ from ckan.common import _
 from defusedxml.ElementTree import parse
 from slugify import slugify
 
+log = logging.getLogger(__name__)
+
+# Valid CKAN tags must only contain alphanumeric characters or symbols: -_.
+PRODUCT_THEMES = (
+    "Affected Population",
+    "Agriculture",
+    "Appeals",
+    "Camp Coordination or Management",
+    "Early Recovery",
+    "Education",
+    "Emergency Shelter",
+    "Emergency Telecommunications",
+    "Environmental Aspects",
+    "Health",
+    "Logistics",
+    "Nutrition",
+    "P-codes",
+    "Population Baseline",
+    "Orientation and Reference",
+    "Search and Rescue or Evacuation Planning",
+    "Search and Rescue Sectors",
+    "Security and Safety and Protection",
+    "Situation and Damage",
+    "Water Sanitation and Hygiene",
+    "Who-What-Where",
+)
+
+
+
 EXCLUDE_TAGS = (
     'status',
     'title',
     'operationID',
+    'theme',
 )
-
 
 class MapPackageException(Exception):
     pass
@@ -75,6 +105,12 @@ def populate_dataset_dict_from_xml(et):
     map_id = et.find('.//mapdata/ref').text
     operation_id = et.find('.//mapdata/operationID').text
     dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
+
+    theme = et.find('.//mapdata/theme').text
+    if theme in PRODUCT_THEMES:
+        dataset_dict['product_themes'] = [theme]
+    else:
+        log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
 
     dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
     dataset_dict['extras'] = [

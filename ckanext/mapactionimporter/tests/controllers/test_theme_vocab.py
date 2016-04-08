@@ -13,13 +13,10 @@ assert_equals = nose.tools.assert_equals
 assert_true = nose.tools.assert_true
 assert_regexp_matches = nose.tools.assert_regexp_matches
 
-from ckanext.mapactionimporter.plugin import create_product_themes
-
 
 class TestThemeVocab(custom_helpers.FunctionalTestBaseClass):
 
     def test_set_multiple_themes_on_dataset(self):
-        create_product_themes()
 
         app = custom_helpers._get_test_app()
         user = factories.User()

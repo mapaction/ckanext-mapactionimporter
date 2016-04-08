@@ -2,30 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.mapactionimporter.logic.action.create
 
-## Must be alphanumeric characters or symbols: -_.
-PRODUCT_THEMES = (
-    "Affected Population",
-    "Agriculture",
-    "Appeals",
-    "Camp Coordination or Management",
-    "Early Recovery",
-    "Education",
-    "Emergency Shelter",
-    "Emergency Telecommunications",
-    "Environmental Aspects",
-    "Health",
-    "Logistics",
-    "Nutrition",
-    "P-codes",
-    "Population Baseline",
-    "Reference and Orientation",
-    "Search and Rescue or Evacuation Planning",
-    "Search and Rescue Sectors",
-    "Security and Safety and Protection",
-    "Situation and Damage",
-    "Water Sanitation and Hygiene",
-    "Who-What-Where",
-)
+from .lib.mappackage import PRODUCT_THEMES
 
 def register_translator():
     # https://github.com/ckan/ckanext-archiver/blob/master/ckanext/archiver/bin/common.py
