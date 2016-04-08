@@ -121,6 +121,16 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
                                  {'Upload':
                                   'Could not find metadata XML in zip file'})
 
+    def test_it_raises_if_empty_metadata(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_zip_empty_metadata()))
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'Upload':
+                                  "Error parsing XML: 'no element found: line 1, column 0'"})
+
     def test_it_tidies_up_if_resource_creation_fails(self):
         old_max_resource_size = uploader._max_resource_size
         uploader._max_resource_size = 1

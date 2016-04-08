@@ -23,6 +23,10 @@ def get_zip_no_metadata():
     return get_test_file('MA001_Missing_Metadata.zip')
 
 
+def get_zip_empty_metadata():
+    return get_test_file('MA001_Empty_Metadata.zip')
+
+
 def get_special_characters_zip():
     return get_test_file('MA001_Special_Characters.zip')
 
