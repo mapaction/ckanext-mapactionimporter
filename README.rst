@@ -67,7 +67,11 @@ To install ckanext-mapactionimporter:
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
 
-4. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
+4. Load custom themes
+
+   paster --plugin=ckanext-mapactionimporter mapactionimporter create_product_themes -c $CKAN_INI
+
+5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
      sudo service apache2 reload
 

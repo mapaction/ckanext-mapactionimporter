@@ -1,0 +1,15 @@
+{% ckan_extends %}
+
+{% block package_tags %}
+  {% if pkg.get('product_themes') %}
+  <section class="tags">
+  <ul class="tag-list">
+    {% for tag in pkg.product_themes %}
+      <li>
+        <a class="tag" href="{% url_for controller='package', action='search', vocab_product_themes=tag %}">{{ h.truncate(tag, 22) }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  </section>
+  {% endif %}
+{% endblock %}

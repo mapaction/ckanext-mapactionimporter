@@ -20,7 +20,7 @@ def create_dataset_from_zip(context, data_dict):
     try:
         dataset_dict, file_paths, operation_id = mappackage.to_dataset(upload.file)
     except (mappackage.MapPackageException) as e:
-        msg = {'upload': [e.args[0]]}
+        msg = {'upload': [_("Error in XML file. {0} ").format(e.args[0])]}
         raise toolkit.ValidationError(msg)
 
     owner_org = data_dict.get('owner_org')
@@ -48,13 +48,7 @@ def create_dataset_from_zip(context, data_dict):
 
     final_name = dataset_dict['name']
     dataset_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
-
-    try:
-        dataset = toolkit.get_action('package_create')(context, dataset_dict)
-    except toolkit.ValidationError as e:
-        if _('That URL is already in use.') in e.error_dict.get('name', []):
-            e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
-        raise e
+    dataset = toolkit.get_action('package_create')(context, dataset_dict)
 
     try:
         for resource_file in file_paths:
@@ -77,7 +71,13 @@ def create_dataset_from_zip(context, data_dict):
     dataset_dict = toolkit.get_action('package_show')(
         context, {'id': dataset['id']})
     dataset_dict['name'] = final_name
-    dataset = toolkit.get_action('package_update')(context, dataset_dict)
+
+    try:
+        dataset = toolkit.get_action('package_update')(context, dataset_dict)
+    except toolkit.ValidationError as e:
+        if _('That URL is already in use.') in e.error_dict.get('name', []):
+            e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
+        raise e        
 
     return dataset
 

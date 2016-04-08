@@ -83,8 +83,10 @@ setup(
     entry_points='''
         [ckan.plugins]
         mapactionimporter=ckanext.mapactionimporter.plugin:MapactionimporterPlugin
-	[babel.extractors]
-	ckan = ckan.lib.extract:extract_ckan
+        [paste.paster_command]
+        mapactionimporter=ckanext.mapactionimporter.commands:MapactionImporterCommand
+        [babel.extractors]
+        ckan = ckan.lib.extract:extract_ckan
     ''',
 
     # If you are changing from the default layout of your extension, you may
