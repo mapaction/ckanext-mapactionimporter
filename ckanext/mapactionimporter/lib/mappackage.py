@@ -61,6 +61,9 @@ def map_metadata_to_ckan_extras(et):
 
 def join_lines(text):
     """ Return input text without newlines """
+    if text is None:
+        return ''
+
     return ' '.join(text.splitlines())
 
 
