@@ -1,6 +1,7 @@
 import os
 
 import logging
+import shutil
 import tempfile
 import zipfile
 
@@ -37,13 +38,13 @@ PRODUCT_THEMES = (
 )
 
 
-
 EXCLUDE_TAGS = (
     'status',
     'title',
     'operationID',
     'theme',
 )
+
 
 class MapPackageException(Exception):
     pass
@@ -71,10 +72,14 @@ def to_dataset(map_package):
     file_paths = []
     try:
         with zipfile.ZipFile(map_package, 'r') as z:
-            z.extractall(tempdir)
-            for f in z.namelist():
-                full_path = os.path.join(tempdir, f)
-                if f.endswith('.xml'):
+            for i in z.infolist():
+                filename = i.filename.encode('cp437')
+                full_path = os.path.join(tempdir, filename)
+
+                with open(full_path, 'wb') as outputfile:
+                    shutil.copyfileobj(z.open(i.filename), outputfile)
+
+                if filename.endswith('.xml'):
                     metadata_paths.append(full_path)
                 else:
                     file_paths.append(full_path)
