@@ -4,9 +4,25 @@ import ckan.tests.helpers as helpers
 import ckan.tests.factories as factories
 import ckanext.mapactionimporter.tests.helpers as custom_helpers
 import ckan.plugins.toolkit as toolkit
+import ckan.lib.uploader as uploader
 
 
 class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
+    def setup(self):
+        super(TestCreateDatasetFromZip, self).setup()
+        self.user = factories.User()
+
+
+class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
+    def setup(self):
+        super(TestCreateDatasetForEvent, self).setup()
+        self.group_189 = factories.Group(name='00189', user=self.user)
+
+        helpers.call_action(
+            'group_member_create',
+            id=self.group_189['id'],
+            username=self.user['name'],
+            role='editor')
 
     def test_it_allows_uploading_a_zipfile(self):
         dataset = helpers.call_action(
@@ -41,11 +57,10 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
                                       'ma001aptivateexample-300dpi.pdf')
 
     def test_dataset_private_when_organization_specified(self):
-        user = factories.User()
-        organization = factories.Organization(user=user)
+        organization = factories.Organization(user=self.user)
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            context={'user': user['id']},
+            context={'user': self.user['id']},
             upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
             owner_org=organization['id'])
         nose.tools.assert_true(dataset['private'])
@@ -105,6 +120,86 @@ class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
         nose.tools.assert_equals(cm.exception.error_summary,
                                  {'Upload':
                                   'Could not find metadata XML in zip file'})
+
+    def test_it_raises_if_empty_metadata(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_zip_empty_metadata()))
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'Upload':
+                                  "Error parsing XML: 'no element found: line 1, column 0'"})
+
+    def test_it_tidies_up_if_resource_creation_fails(self):
+        old_max_resource_size = uploader._max_resource_size
+        uploader._max_resource_size = 1
+
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equals(cm.exception.error_summary,
+                                 {'Upload':
+                                  'File upload too large'})
+
+        datasets = helpers.call_action(
+            'package_list',
+            context={'user': self.user['name']})
+
+        # The dataset will be in the trash so won't appear here
+        nose.tools.assert_equals(len(datasets), 0)
+
+        uploader._max_resource_size = old_max_resource_size
+
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=_UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equal(
+            dataset['name'],
+            '189-ma001-aptivate-example')
+
+    def test_it_raises_if_file_has_special_characters(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_special_characters_zip()))
+
+        nose.tools.assert_equals(cm.exception.error_summary, {
+            'Upload':
+            "Error parsing XML: 'not well-formed (invalid token): line 22, column 47'",
+        })
+
+    def test_it_attaches_to_event_with_operation_id_from_metadata(self):
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            context={'user': self.user['name']},
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+        )
+
+        dataset = helpers.call_action(
+            'package_show',
+            context={'user': self.user['name']},
+            id=dataset['id'])
+        events = dataset['groups']
+
+        nose.tools.assert_equals(len(events), 1)
+        nose.tools.assert_equals(events[0]['name'], '00189')
+
+
+class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
+    def test_it_raises_if_event_does_not_exist(self):
+        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                upload=_UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equals(cm.exception.error_summary, {
+            'Upload':
+            "Event with operationID '00189' does not exist",
+        })
 
 
 class _UploadFile(object):

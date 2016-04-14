@@ -4,6 +4,8 @@ import ckan.config.middleware
 import pylons.config as config
 import webtest
 
+from ckanext.mapactionimporter.plugin import create_product_themes
+
 
 def get_test_xml():
     return get_test_file('MA001_Aptivate_Example.xml')
@@ -19,6 +21,14 @@ def get_not_zip():
 
 def get_zip_no_metadata():
     return get_test_file('MA001_Missing_Metadata.zip')
+
+
+def get_zip_empty_metadata():
+    return get_test_file('MA001_Empty_Metadata.zip')
+
+
+def get_special_characters_zip():
+    return get_test_file('MA001_Special_Characters.zip')
 
 
 def get_test_file(filename):
@@ -63,7 +73,7 @@ class _UploadFile(object):
         self.file = fp
 
 
-class FunctionalTestBaseClass():
+class FunctionalTestBaseClass(object):
     '''A base class for functional test classes to inherit from.
 
     This handles loading the mapactionimporter plugin and resetting the CKAN config
@@ -82,10 +92,13 @@ class FunctionalTestBaseClass():
         _load_plugin('mapactionimporter')
         cls.app = _get_test_app()
 
+
+
     def setup(self):
         import ckan.model as model
         model.Session.close_all()
         model.repo.rebuild_db()
+        create_product_themes()
 
     @classmethod
     def teardown_class(cls):

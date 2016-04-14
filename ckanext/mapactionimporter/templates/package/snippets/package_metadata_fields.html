@@ -1,0 +1,24 @@
+{% ckan_extends %}
+
+{# You could remove 'free extras' from the package form like this, but we keep them for this example's tests.
+  {% block custom_fields %}
+  {% endblock %}
+#}
+
+{% block package_metadata_fields %}
+  <div class="control-group">
+    <label class="control-label" for="field-product_themes">{{ _("Themes") }}</label>
+    <div class="controls">
+      <select id="field-product_themes" name="product_themes" data-module="autocomplete" multiple="multiple">
+        {% for product_theme in h.product_themes()  %}
+        {% set selected_theme = (product_theme.name in data.get('product_themes', [])) %}
+            <option value="{{ product_theme.name }}" {% if selected_theme %}selected="selected"{% endif %} 
+                >{{ product_theme.display_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {{ super() }}
+
+{% endblock %}
