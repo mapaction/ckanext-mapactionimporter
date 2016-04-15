@@ -2,6 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.mapactionimporter.logic.action.create
 
+from collections import OrderedDict
 from .lib.mappackage import PRODUCT_THEMES
 
 def register_translator():
@@ -66,7 +67,33 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
     # IFacets
     def dataset_facets(self, facets_dict, package_type):
-        facets_dict['vocab_product_themes'] = plugins.toolkit._('Theme')
+        #insert the Theme facet after Groups if it's there.
+        facets = facets_dict.items()
+        keys = facets_dict.keys()
+        facets_dict.clear()
+
+        position = 0 #default to the start.
+
+        if 'groups' in keys:
+            position = keys.index('groups') + 1
+        
+        facets.insert(position, ('vocab_product_themes', plugins.toolkit._('Themes')))
+
+        for item in facets:
+            facets_dict[item[0]] = item[1]
+
+        return facets_dict
+
+
+    def group_facets(self, facets_dict, group_type, package_type):
+        #insert the Theme facet at the beginning 
+        facets = facets_dict.items()
+        facets_dict.clear()
+
+        facets_dict['vocab_product_themes'] = plugins.toolkit._('Themes')
+        for item in facets:
+            facets_dict[item[0]] = item[1]
+
         return facets_dict
 
 
