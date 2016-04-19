@@ -86,7 +86,7 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
 
     def group_facets(self, facets_dict, group_type, package_type):
-        #insert the Theme facet at the beginning 
+        #insert the Theme facet at the beginning
         facets = facets_dict.items()
         facets_dict.clear()
 
