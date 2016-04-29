@@ -115,11 +115,13 @@ def populate_dataset_dict_from_xml(et):
     operation_id = et.find('.//mapdata/operationID').text
     dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
 
-    theme = et.find('.//mapdata/theme').text
-    if theme in PRODUCT_THEMES:
-        dataset_dict['product_themes'] = [theme]
-    else:
-        log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
+    theme = et.find('.//mapdata/theme')
+
+    if theme is not None:
+        if theme.text in PRODUCT_THEMES:
+            dataset_dict['product_themes'] = [theme.text]
+        else:
+            log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme.text)
 
     summary = et.find('.//mapdata/summary')
     dataset_dict['notes'] = join_lines(summary)

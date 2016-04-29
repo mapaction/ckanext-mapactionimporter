@@ -44,10 +44,7 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
     def test_missing_summary_copied_to_notes(self):
         et = self._parse_xml()
-
-        mapdata = et.findall('.//mapdata')[0]
-        summary = et.findall('.//summary')[0]
-        mapdata.remove(summary)
+        self._remove_from_etree(et, './/mapdata', 'summary')
 
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
@@ -55,14 +52,24 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
     def test_missing_title_copied_to_title(self):
         et = self._parse_xml()
-
-        mapdata = et.findall('.//mapdata')[0]
-        summary = et.findall('.//title')[0]
-        mapdata.remove(summary)
+        self._remove_from_etree(et, './/mapdata', 'title')
 
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
         self.assertEqual(dataset_dict['title'], '')
+
+    def test_no_themes_when_missing(self):
+        et = self._parse_xml()
+        self._remove_from_etree(et, './/mapdata', 'theme')
+
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertTrue('product_themes' not in dataset_dict)
+
+    def _remove_from_etree(self, et, parent_xpath, child_xpath):
+        for parent in et.findall(parent_xpath):
+            for child in parent.findall(child_xpath):
+                parent.remove(child)
 
     def _parse_xml(self, **kwargs):
         tags = (
