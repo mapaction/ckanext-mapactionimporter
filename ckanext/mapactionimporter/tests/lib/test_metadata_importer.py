@@ -53,6 +53,17 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
         self.assertEqual(dataset_dict['notes'], '')
 
+    def test_missing_title_copied_to_title(self):
+        et = self._parse_xml()
+
+        mapdata = et.findall('.//mapdata')[0]
+        summary = et.findall('.//title')[0]
+        mapdata.remove(summary)
+
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertEqual(dataset_dict['title'], '')
+
     def _parse_xml(self, **kwargs):
         tags = (
             'operationid',

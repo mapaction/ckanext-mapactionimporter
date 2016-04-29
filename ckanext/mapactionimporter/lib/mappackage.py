@@ -122,7 +122,6 @@ def populate_dataset_dict_from_xml(et):
         log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
 
     summary = et.find('.//mapdata/summary')
-
     dataset_dict['notes'] = join_lines(summary)
 
     dataset_dict['extras'] = [
