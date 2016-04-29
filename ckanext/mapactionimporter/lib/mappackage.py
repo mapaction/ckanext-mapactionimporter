@@ -59,12 +59,12 @@ def map_metadata_to_ckan_extras(et):
     return map_metadata
 
 
-def join_lines(text):
+def join_lines(element):
     """ Return input text without newlines """
-    if text is None:
+    if element is None or element.text is None:
         return ''
 
-    return ' '.join(text.splitlines())
+    return ' '.join(element.text.splitlines())
 
 
 def to_dataset(map_package):
@@ -109,7 +109,7 @@ def to_dataset(map_package):
 def populate_dataset_dict_from_xml(et):
     # Extract key metadata
     dataset_dict = {}
-    dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
+    dataset_dict['title'] = join_lines(et.find('.//mapdata/title'))
 
     map_id = et.find('.//mapdata/ref').text
     operation_id = et.find('.//mapdata/operationID').text
@@ -121,7 +121,10 @@ def populate_dataset_dict_from_xml(et):
     else:
         log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
 
-    dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
+    summary = et.find('.//mapdata/summary')
+
+    dataset_dict['notes'] = join_lines(summary)
+
     dataset_dict['extras'] = [
         {'key': k, 'value': v} for (k, v) in
         map_metadata_to_ckan_extras(et).items()
