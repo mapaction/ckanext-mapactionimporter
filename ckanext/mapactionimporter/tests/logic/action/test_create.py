@@ -80,6 +80,12 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
                    "is an example map only and for testing use only")
         nose.tools.assert_equal(dataset['notes'], summary)
 
+    def test_dataset_license_defaults_to_not_specified(self):
+        dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
+        nose.tools.assert_equals(dataset['license_id'], 'notspecified')
+
     def _check_uploaded_resource(self, resource, expected_format,
                                  expected_name,
                                  expected_basename):

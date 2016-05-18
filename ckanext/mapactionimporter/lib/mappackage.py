@@ -103,6 +103,9 @@ def to_dataset(map_package):
     dataset_dict = populate_dataset_dict_from_xml(et)
     operation_id = et.find('.//mapdata/operationID').text
 
+    # Not currently in the metadata
+    dataset_dict['license_id'] = 'notspecified'
+
     return (dataset_dict, file_paths, operation_id)
 
 
