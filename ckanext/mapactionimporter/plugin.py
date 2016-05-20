@@ -76,7 +76,7 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
         if 'groups' in keys:
             position = keys.index('groups') + 1
-        
+
         facets.insert(position, ('vocab_product_themes', plugins.toolkit._('Themes')))
 
         for item in facets:
@@ -104,7 +104,7 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
     def before_map(self, map_):
         map_.connect(
-            'import_mapactionzip',
+            'import_mapactionzip_form',
             '/import_mapactionzip',
             controller='ckanext.mapactionimporter.controllers.zipimport:ZipImportController',
             action='new',
