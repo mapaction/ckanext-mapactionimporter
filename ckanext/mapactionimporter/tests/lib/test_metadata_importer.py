@@ -32,6 +32,8 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
     <ref>{ref}</ref>
     <summary>{summary}</summary>
     <theme>Orientation and Reference</theme>
+    <mapnumber>{mapnumber}</mapnumber>
+    <versionnumber>{versionnumber}</versionnumber>
   </mapdata>
 </mapdoc>
     """
@@ -50,6 +52,13 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
         self.assertEqual(dataset_dict['notes'], '')
 
+    def test_summary_newlines_replaced_with_spaces(self):
+        et = self._parse_xml(summary='one\ntwo\r\nthree\rfour\n\nfive\r\n\r\nsix\r\rseven')
+
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertEqual(dataset_dict['notes'], 'one two three four  five  six  seven')
+
     def test_missing_title_copied_to_title(self):
         et = self._parse_xml()
         self._remove_from_etree(et, './/mapdata', 'title')
@@ -66,6 +75,12 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
         self.assertTrue('product_themes' not in dataset_dict)
 
+    def test_name_includes_operation_id_map_number_and_version(self):
+        et = self._parse_xml(operationid='00123', mapnumber='MA001', versionnumber='02')
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertEqual(dataset_dict['name'], '00123-ma001-02')
+
     def _remove_from_etree(self, et, parent_xpath, child_xpath):
         for parent in et.findall(parent_xpath):
             for child in parent.findall(child_xpath):
@@ -73,11 +88,13 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
     def _parse_xml(self, **kwargs):
         tags = (
+            'mapnumber',
             'operationid',
             'ref',
             'summary',
             'theme',
             'title',
+            'versionnumber',
         )
 
         values = {}

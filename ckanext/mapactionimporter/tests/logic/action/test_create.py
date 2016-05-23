@@ -31,11 +31,11 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(
             dataset['title'],
-            'Central African Republic:  Example Map- Reference (as of 3 Feb 2099)')
+            'Central African Republic: Example Map- Reference (as of 3 Feb 2099)')
 
         nose.tools.assert_equal(
             dataset['name'],
-            '189-ma001-aptivate-example')
+            '189-ma001-01')
 
         # Expect the JPEG And PDF referenced in the XML Metadata
         dataset = helpers.call_action('package_show', id=dataset['id'])
@@ -165,7 +165,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(
             dataset['name'],
-            '189-ma001-aptivate-example')
+            '189-ma001-01')
 
     def test_it_raises_if_file_has_special_characters(self):
         with nose.tools.assert_raises(toolkit.ValidationError) as cm:
@@ -193,6 +193,33 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equals(len(events), 1)
         nose.tools.assert_equals(events[0]['name'], '00189')
+
+    def test_new_version_associated_with_existing(self):
+        version_1 = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
+
+        nose.tools.assert_equal(version_1['name'], '189-ma001-01')
+
+        version_2 = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=custom_helpers._UploadFile(custom_helpers.get_update_zip()))
+
+        nose.tools.assert_equal(version_2['name'], '189-ma001-02')
+
+        parents_1 = helpers.call_action(
+            'package_relationships_list',
+            id=version_1['id'],
+            rel='child_of')
+
+        nose.tools.assert_equal(len(parents_1), 1)
+
+        parents_2 = helpers.call_action(
+            'package_relationships_list',
+            id=version_2['id'],
+            rel='child_of')
+
+        nose.tools.assert_equal(len(parents_2), 1)
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):

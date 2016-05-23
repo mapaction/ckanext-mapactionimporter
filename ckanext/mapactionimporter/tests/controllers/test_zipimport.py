@@ -42,7 +42,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         # Should redirect to dataset's page
         assert_equals(response.status_int, 302)
 
-        slug = '189-ma001-aptivate-example'
+        slug = '189-ma001-01'
         assert_regexp_matches(
             response.headers['Location'],
             '/dataset/edit/%s' % slug)
@@ -50,7 +50,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         # Should create the dataset
         dataset = helpers.call_action('package_show', id=slug)
         assert_equals(dataset['title'],
-                      'Central African Republic:  Example Map- Reference (as of 3 Feb 2099)')
+                      'Central African Republic: Example Map- Reference (as of 3 Feb 2099)')
         assert_equals(dataset['product_themes'], ["Orientation and Reference"])
         assert_equals(dataset['private'], True)
 
