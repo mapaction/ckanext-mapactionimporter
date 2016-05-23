@@ -18,7 +18,8 @@ def create_dataset_from_zip(context, data_dict):
     private = data_dict.get('private', True)
 
     try:
-        dataset_dict, file_paths, operation_id = mappackage.to_dataset(upload.file)
+        dataset_dict, file_paths, operation_id = mappackage.to_dataset(
+            upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
@@ -35,7 +36,7 @@ def create_dataset_from_zip(context, data_dict):
 
     try:
         toolkit.get_action('group_show')(
-            context,
+            _get_context(context),
             data_dict={'type': 'event', 'id': operation_id})
     except (logic.NotFound) as e:
         msg = {'upload': [_("Event with operationID '{0}' does not exist").format(
@@ -48,7 +49,8 @@ def create_dataset_from_zip(context, data_dict):
 
     final_name = dataset_dict['name']
     dataset_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
-    dataset = toolkit.get_action('package_create')(context, dataset_dict)
+    dataset = toolkit.get_action('package_create')(
+        _get_context(context), dataset_dict)
 
     try:
         for resource_file in file_paths:
@@ -56,12 +58,13 @@ def create_dataset_from_zip(context, data_dict):
                 'package_id': dataset['id'],
                 'path': resource_file,
             }
-            _create_and_upload_local_resource(context, resource)
+            _create_and_upload_local_resource(_get_context(context), resource)
     except:
-        toolkit.get_action('package_delete')(context, {'id': dataset['id']})
+        toolkit.get_action('package_delete')(_get_context(context),
+                                             {'id': dataset['id']})
         raise
 
-    toolkit.get_action('member_create')(context, {
+    toolkit.get_action('member_create')(_get_context(context), {
         'id': operation_id,
         'object': dataset['id'],
         'object_type': 'package',
@@ -73,11 +76,45 @@ def create_dataset_from_zip(context, data_dict):
     dataset_dict['name'] = final_name
 
     try:
-        dataset = toolkit.get_action('package_update')(context, dataset_dict)
+        dataset = toolkit.get_action('package_update')(
+            _get_context(context), dataset_dict)
     except toolkit.ValidationError as e:
         if _('That URL is already in use.') in e.error_dict.get('name', []):
             e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
         raise e
+
+    # TODO: Is there a neater way so we don't have to reverse engineer the
+    # parent name?
+    parent_name = '-'.join(final_name.split('-')[0:-1])
+    parent = _get_or_create_parent_dataset(context, parent_name)
+
+    toolkit.get_action('package_relationship_create')(
+        _get_context(context), {
+            'subject': dataset['id'],
+            'object': parent['id'],
+            'type': 'child_of',
+        }
+    )
+
+    return dataset
+
+
+def _get_context(context):
+    return {
+        'model': context['model'],
+        'session': context['session'],
+        'user': context['user'],
+        'ignore_auth': context.get('ignore_auth', False)
+    }
+
+
+def _get_or_create_parent_dataset(context, parent_name):
+    try:
+        dataset = toolkit.get_action('package_show')(
+            _get_context(context), {'id': parent_name})
+    except (logic.NotFound):
+        dataset = toolkit.get_action('package_create')(
+            _get_context(context), {'name': parent_name})
 
     return dataset
 

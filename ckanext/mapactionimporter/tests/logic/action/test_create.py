@@ -207,19 +207,23 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(version_2['name'], '189-ma001-02')
 
-        parents_1 = helpers.call_action(
+        [parent_1] = helpers.call_action(
             'package_relationships_list',
             id=version_1['id'],
             rel='child_of')
 
-        nose.tools.assert_equal(len(parents_1), 1)
-
-        parents_2 = helpers.call_action(
+        [parent_2] = helpers.call_action(
             'package_relationships_list',
             id=version_2['id'],
             rel='child_of')
 
-        nose.tools.assert_equal(len(parents_2), 1)
+        nose.tools.assert_equal(parent_1['subject'], '189-ma001-01')
+        nose.tools.assert_equal(parent_1['type'], 'child_of')
+        nose.tools.assert_equal(parent_1['object'], '189-ma001')
+
+        nose.tools.assert_equal(parent_2['subject'], '189-ma001-02')
+        nose.tools.assert_equal(parent_2['type'], 'child_of')
+        nose.tools.assert_equal(parent_2['object'], '189-ma001')
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
