@@ -11,7 +11,6 @@ assert_regexp_matches = nose.tools.assert_regexp_matches
 
 
 class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
-
     def test_import_zipfile(self):
         user = factories.User()
         organization = factories.Organization(user=user)
@@ -29,7 +28,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
             'owner_org': organization['id'],
         }
 
-        response = self.app.post(
+        response = self._get_test_app().post(
             url,
             params,
             extra_environ=env,
@@ -60,7 +59,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         user = factories.User()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         url = toolkit.url_for('import_mapactionzip')
-        response = self.app.get(url, extra_environ=env, status=[401])
+        response = self._get_test_app().get(url, extra_environ=env, status=[401])
         assert_true('Unauthorized to create a dataset' in response.body)
 
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
@@ -68,5 +67,5 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         user = factories.User()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         url = toolkit.url_for('import_mapactionzip')
-        response = self.app.post(url, extra_environ=env, status=[401])
+        response = self._get_test_app().post(url, extra_environ=env, status=[401])
         assert_true('Unauthorized to create a dataset' in response.body)
