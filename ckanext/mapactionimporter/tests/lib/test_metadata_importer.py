@@ -32,8 +32,8 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
     <ref>{ref}</ref>
     <summary>{summary}</summary>
     <theme>Orientation and Reference</theme>
-    <mapnumber>{mapnumber}</mapnumber>
-    <versionnumber>{versionnumber}</versionnumber>
+    <mapNumber>{mapnumber}</mapNumber>
+    <versionNumber>{versionnumber}</versionNumber>
   </mapdata>
 </mapdoc>
     """

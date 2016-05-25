@@ -1,12 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <mapdoc>
   <mapdata>
     <operationID>189</operationID>
     <sourceorg>MapAction</sourceorg>
-    <title>Central African Republic: 
+    <title>Central African Republic:
 Example Map-
 Reference
 (as of 3 Feb 2099)</title>
+    <mapNumber>MA001</mapNumber>
+    <versionNumber>01</versionNumber>
     <ref>MA001_Aptivate_Example</ref>
     <language>English</language>
     <countries>CENTRAL AFRICAN REPUBLIC</countries>
@@ -29,7 +31,7 @@ Reference
 
 This is an example map only and for testing use only</summary>
     <imagerydate></imagerydate>
-    <datasource>Situational data: 
+    <datasource>Situational data:
 Boundaries: GADM
 Settlements: Natural Earth
 Physical features: SRTM</datasource>

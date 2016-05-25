@@ -115,8 +115,8 @@ def populate_dataset_dict_from_xml(et):
     dataset_dict['title'] = join_lines(et.find('.//mapdata/title'))
 
     operation_id = et.find('.//mapdata/operationID').text
-    map_number = et.find('.//mapdata/mapnumber').text
-    version_number = et.find('.//mapdata/versionnumber').text
+    map_number = et.find('.//mapdata/mapNumber').text
+    version_number = et.find('.//mapdata/versionNumber').text
     dataset_dict['name'] = slugify('%s %s %s' % (operation_id,
                                                  map_number, version_number))
 
