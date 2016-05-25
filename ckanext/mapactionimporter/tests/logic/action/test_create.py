@@ -195,9 +195,13 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
         nose.tools.assert_equals(events[0]['name'], '00189')
 
     def test_new_version_associated_with_existing(self):
+        organization = factories.Organization(user=self.user)
         version_1 = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
+            context={'user': self.user['name']},
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            owner_org=organization['id']
+        )
 
         nose.tools.assert_equal(version_1['name'], '189-ma001-01')
 
@@ -207,23 +211,31 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(version_2['name'], '189-ma001-02')
 
-        [parent_1] = helpers.call_action(
+        [rel_1] = helpers.call_action(
             'package_relationships_list',
             id=version_1['id'],
             rel='child_of')
 
-        [parent_2] = helpers.call_action(
+        [rel_2] = helpers.call_action(
             'package_relationships_list',
             id=version_2['id'],
             rel='child_of')
 
-        nose.tools.assert_equal(parent_1['subject'], '189-ma001-01')
-        nose.tools.assert_equal(parent_1['type'], 'child_of')
-        nose.tools.assert_equal(parent_1['object'], '189-ma001')
+        nose.tools.assert_equal(rel_1['subject'], '189-ma001-01')
+        nose.tools.assert_equal(rel_1['type'], 'child_of')
+        nose.tools.assert_equal(rel_1['object'], '189-ma001')
 
-        nose.tools.assert_equal(parent_2['subject'], '189-ma001-02')
-        nose.tools.assert_equal(parent_2['type'], 'child_of')
-        nose.tools.assert_equal(parent_2['object'], '189-ma001')
+        nose.tools.assert_equal(rel_2['subject'], '189-ma001-02')
+        nose.tools.assert_equal(rel_2['type'], 'child_of')
+        nose.tools.assert_equal(rel_2['object'], '189-ma001')
+
+        parent_dataset = helpers.call_action(
+            'package_show',
+            context={'user': self.user['name']},
+            id='189-ma001')
+
+        nose.tools.assert_equal(parent_dataset['owner_org'],
+                                organization['id'])
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):

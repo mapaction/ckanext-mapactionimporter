@@ -54,6 +54,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         assert_equals(dataset['product_themes'], ["Orientation and Reference"])
         assert_equals(dataset['private'], True)
 
+
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
     def test_cannot_display_form_without_access(self):
         user = factories.User()

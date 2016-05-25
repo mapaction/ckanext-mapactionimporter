@@ -86,7 +86,9 @@ def create_dataset_from_zip(context, data_dict):
     # TODO: Is there a neater way so we don't have to reverse engineer the
     # parent name?
     parent_name = '-'.join(final_name.split('-')[0:-1])
-    parent = _get_or_create_parent_dataset(context, parent_name)
+    parent = _get_or_create_parent_dataset(context,
+                                           {'name': parent_name,
+                                            'owner_org': owner_org})
 
     toolkit.get_action('package_relationship_create')(
         _get_context(context), {
@@ -108,13 +110,13 @@ def _get_context(context):
     }
 
 
-def _get_or_create_parent_dataset(context, parent_name):
+def _get_or_create_parent_dataset(context, data_dict):
     try:
         dataset = toolkit.get_action('package_show')(
-            _get_context(context), {'id': parent_name})
+            _get_context(context), {'id': data_dict['name']})
     except (logic.NotFound):
         dataset = toolkit.get_action('package_create')(
-            _get_context(context), {'name': parent_name})
+            _get_context(context), data_dict)
 
     return dataset
 
