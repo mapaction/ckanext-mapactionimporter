@@ -50,6 +50,7 @@ class FunctionalTestBaseClass(helpers.FunctionalTestBase):
     @classmethod
     def setup_class(cls):
         super(FunctionalTestBaseClass, cls).setup_class()
+        plugins.load('datasetversions')
         plugins.load('mapactionimporter')
 
     def setup(self):
@@ -58,5 +59,6 @@ class FunctionalTestBaseClass(helpers.FunctionalTestBase):
 
     @classmethod
     def teardown_class(cls):
+        plugins.unload('datasetversions')
         plugins.unload('mapactionimporter')
         super(FunctionalTestBaseClass, cls).teardown_class()

@@ -84,17 +84,14 @@ def create_dataset_from_zip(context, data_dict):
         raise e
 
     # TODO: Is there a neater way so we don't have to reverse engineer the
-    # parent name?
-    parent_name = '-'.join(final_name.split('-')[0:-1])
-    parent = _get_or_create_parent_dataset(context,
-                                           {'name': parent_name,
-                                            'owner_org': owner_org})
+    # base name?
+    base_name = '-'.join(final_name.split('-')[0:-1])
 
-    toolkit.get_action('package_relationship_create')(
+    toolkit.get_action('dataset_version_create')(
         _get_context(context), {
-            'subject': dataset['id'],
-            'object': parent['id'],
-            'type': 'child_of',
+            'id': dataset['id'],
+            'base_name': base_name,
+            'owner_org': owner_org
         }
     )
 
@@ -108,17 +105,6 @@ def _get_context(context):
         'user': context['user'],
         'ignore_auth': context.get('ignore_auth', False)
     }
-
-
-def _get_or_create_parent_dataset(context, data_dict):
-    try:
-        dataset = toolkit.get_action('package_show')(
-            _get_context(context), {'id': data_dict['name']})
-    except (logic.NotFound):
-        dataset = toolkit.get_action('package_create')(
-            _get_context(context), data_dict)
-
-    return dataset
 
 
 def _upload_attribute_is_valid(upload):
