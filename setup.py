@@ -62,7 +62,6 @@ setup(
     install_requires=[
         'defusedxml>=0.4.1,<0.5.0',
         'python-slugify>=1.2.0,<1.3.0',
-        'ckanext-datasetversions'
     ],
 
     # If there are data files included in your packages that need to be
@@ -84,6 +83,7 @@ setup(
     entry_points='''
         [ckan.plugins]
         mapactionimporter=ckanext.mapactionimporter.plugin:MapactionimporterPlugin
+        datasetversions=ckanext.datasetversions.plugin:DatasetversionsPlugin
         [paste.paster_command]
         mapactionimporter=ckanext.mapactionimporter.commands:MapactionImporterCommand
         [babel.extractors]
