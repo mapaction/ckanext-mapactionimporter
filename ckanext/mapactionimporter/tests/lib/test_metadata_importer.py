@@ -102,7 +102,7 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
                              versionnumber='02')
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
-        self.assertEqual(dataset_dict['name'], '00123-ma001-2')
+        self.assertEqual(dataset_dict['name'], '00123-ma001-v2')
 
     def _remove_from_etree(self, et, parent_xpath, child_xpath):
         for parent in et.findall(parent_xpath):

@@ -41,7 +41,7 @@ class TestDataPackageController(custom_helpers.FunctionalTestBaseClass):
         # Should redirect to dataset's page
         assert_equals(response.status_int, 302)
 
-        slug = '189-ma001-1'
+        slug = '189-ma001-v1'
         assert_regexp_matches(
             response.headers['Location'],
             '/dataset/edit/%s' % slug)
