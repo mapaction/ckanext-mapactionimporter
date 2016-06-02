@@ -38,7 +38,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
             '189-ma001-1')
 
         # Expect the JPEG And PDF referenced in the XML Metadata
-        dataset = helpers.call_action('base_package_show', id=dataset['id'])
+        dataset = helpers.call_action('ckan_package_show', id=dataset['id'])
         resources = dataset['resources']
         extras = dataset['extras']
 
@@ -197,7 +197,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
         )
 
         dataset = helpers.call_action(
-            'base_package_show',
+            'ckan_package_show',
             context={'user': self.user['name']},
             id=dataset['id'])
         events = dataset['groups']
@@ -241,7 +241,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
         nose.tools.assert_equal(rel_2['object'], '189-ma001')
 
         parent_dataset = helpers.call_action(
-            'base_package_show',
+            'ckan_package_show',
             context={'user': self.user['name']},
             id='189-ma001')
 
