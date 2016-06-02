@@ -114,7 +114,7 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
         values = {}
 
         for tag in tags:
-            values[tag] = kwargs.get(tag, '')
+            values[tag] = kwargs.get(tag, 'a default value')
 
         xml = self.template_xml.format(**values)
 

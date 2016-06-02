@@ -59,12 +59,12 @@ def map_metadata_to_ckan_extras(et):
     return map_metadata
 
 
-def join_lines(element):
+def join_lines(text):
     """ Return input text without newlines """
-    if element is None or element.text is None:
+    if text is None:
         return ''
 
-    return ' '.join(element.text.splitlines())
+    return ' '.join(text.splitlines())
 
 
 def to_dataset(map_package):
@@ -101,7 +101,7 @@ def to_dataset(map_package):
             e.msg.args[0])))
 
     dataset_dict = populate_dataset_dict_from_xml(et)
-    operation_id = et.find('.//mapdata/operationID').text
+    operation_id = get_mandatory_text_node(et, 'operationID')
 
     # Not currently in the metadata
     dataset_dict['license_id'] = 'notspecified'
@@ -112,23 +112,23 @@ def to_dataset(map_package):
 def populate_dataset_dict_from_xml(et):
     # Extract key metadata
     dataset_dict = {}
-    dataset_dict['title'] = join_lines(et.find('.//mapdata/title'))
+    dataset_dict['title'] = join_lines(get_text_node(et, 'title'))
 
-    operation_id = get_text_node(et, 'operationID')
-    map_number = get_text_node(et, 'mapNumber')
-    version_number = get_text_node(et, 'versionNumber')
+    operation_id = get_mandatory_text_node(et, 'operationID')
+    map_number = get_mandatory_text_node(et, 'mapNumber')
+    version_number = get_mandatory_text_node(et, 'versionNumber')
     dataset_dict['name'] = slugify('%s %s %s' % (operation_id,
                                                  map_number, version_number))
 
-    theme = et.find('.//mapdata/theme')
+    theme = get_text_node(et, 'theme')
 
     if theme is not None:
-        if theme.text in PRODUCT_THEMES:
-            dataset_dict['product_themes'] = [theme.text]
+        if theme in PRODUCT_THEMES:
+            dataset_dict['product_themes'] = [theme]
         else:
-            log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme.text)
+            log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
 
-    summary = et.find('.//mapdata/summary')
+    summary = get_text_node(et, 'summary')
     dataset_dict['notes'] = join_lines(summary)
 
     dataset_dict['extras'] = [
@@ -139,9 +139,18 @@ def populate_dataset_dict_from_xml(et):
     return dataset_dict
 
 
+def get_mandatory_text_node(et, name):
+    text = get_text_node(et, name)
+
+    if text is None:
+        raise MapPackageException(_("Unable to find mandatory field '{name}' in metadata".format(name=name)))
+
+    return text
+
+
 def get_text_node(et, name):
     element = et.find('.//mapdata/{0}'.format(name))
     if element is not None:
         return element.text
 
-    raise MapPackageException(_("Unable to find mandatory field '{name}' in metadata".format(name=name)))
+    return None
