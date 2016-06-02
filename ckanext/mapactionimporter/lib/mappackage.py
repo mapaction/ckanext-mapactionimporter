@@ -116,7 +116,14 @@ def populate_dataset_dict_from_xml(et):
 
     operation_id = get_mandatory_text_node(et, 'operationID')
     map_number = get_mandatory_text_node(et, 'mapNumber')
-    version_number = get_mandatory_text_node(et, 'versionNumber')
+    version_text = get_mandatory_text_node(et, 'versionNumber')
+
+    try:
+        version_number = int(version_text)
+    except ValueError:
+        raise MapPackageException(_("Version number '{version_number}' must be an integer".format(
+            version_number=version_text)))
+
     dataset_dict['name'] = slugify('%s %s %s' % (operation_id,
                                                  map_number, version_number))
 

@@ -88,12 +88,21 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
             with self.assertRaises(mappackage.MapPackageException):
                 mappackage.populate_dataset_dict_from_xml(et)
 
+    def test_it_raises_when_version_number_non_numeric(self):
+        et = self._parse_xml(versionnumber='v1')
+
+        with self.assertRaises(mappackage.MapPackageException) as e:
+            mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertEquals(e.exception.args[0],
+                          "Version number 'v1' must be an integer")
+
     def test_name_includes_operation_id_map_number_and_version(self):
         et = self._parse_xml(operationid='00123', mapnumber='MA001',
                              versionnumber='02')
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
-        self.assertEqual(dataset_dict['name'], '00123-ma001-02')
+        self.assertEqual(dataset_dict['name'], '00123-ma001-2')
 
     def _remove_from_etree(self, et, parent_xpath, child_xpath):
         for parent in et.findall(parent_xpath):
@@ -101,20 +110,20 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
                 parent.remove(child)
 
     def _parse_xml(self, **kwargs):
-        tags = (
-            'mapnumber',
-            'operationid',
-            'ref',
-            'summary',
-            'theme',
-            'title',
-            'versionnumber',
-        )
+        defaults = {
+            'mapnumber': 'default-map-no',
+            'operationid': 'default-op-id',
+            'ref': 'default-ref',
+            'summary': 'default-summary',
+            'theme': 'default-theme',
+            'title': 'default-title',
+            'versionnumber': '987',
+        }
 
         values = {}
 
-        for tag in tags:
-            values[tag] = kwargs.get(tag, 'a default value')
+        for tag, default in defaults.iteritems():
+            values[tag] = kwargs.get(tag, default)
 
         xml = self.template_xml.format(**values)
 

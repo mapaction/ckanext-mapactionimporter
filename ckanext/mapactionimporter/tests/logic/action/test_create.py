@@ -35,7 +35,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(
             dataset['name'],
-            '189-ma001-01')
+            '189-ma001-1')
 
         # Expect the JPEG And PDF referenced in the XML Metadata
         dataset = helpers.call_action('base_package_show', id=dataset['id'])
@@ -165,7 +165,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
 
         nose.tools.assert_equal(
             dataset['name'],
-            '189-ma001-01')
+            '189-ma001-1')
 
     def test_it_raises_if_file_has_special_characters(self):
         with nose.tools.assert_raises(toolkit.ValidationError) as cm:
@@ -214,13 +214,13 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
             owner_org=organization['id']
         )
 
-        nose.tools.assert_equal(version_1['name'], '189-ma001-01')
+        nose.tools.assert_equal(version_1['name'], '189-ma001-1')
 
         version_2 = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             upload=custom_helpers._UploadFile(custom_helpers.get_update_zip()))
 
-        nose.tools.assert_equal(version_2['name'], '189-ma001-02')
+        nose.tools.assert_equal(version_2['name'], '189-ma001-2')
 
         [rel_1] = helpers.call_action(
             'package_relationships_list',
@@ -232,11 +232,11 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
             id=version_2['id'],
             rel='child_of')
 
-        nose.tools.assert_equal(rel_1['subject'], '189-ma001-01')
+        nose.tools.assert_equal(rel_1['subject'], '189-ma001-1')
         nose.tools.assert_equal(rel_1['type'], 'child_of')
         nose.tools.assert_equal(rel_1['object'], '189-ma001')
 
-        nose.tools.assert_equal(rel_2['subject'], '189-ma001-02')
+        nose.tools.assert_equal(rel_2['subject'], '189-ma001-2')
         nose.tools.assert_equal(rel_2['type'], 'child_of')
         nose.tools.assert_equal(rel_2['object'], '189-ma001')
 
