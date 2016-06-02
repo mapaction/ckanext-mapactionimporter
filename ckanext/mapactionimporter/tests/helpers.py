@@ -35,6 +35,10 @@ def get_special_characters_zip():
     return get_test_file('MA001_Special_Characters.zip')
 
 
+def get_missing_fields_zip():
+    return get_test_file('MA001_Missing_Fields.zip')
+
+
 def get_test_file(filename):
     return file(os.path.join(os.path.split(__file__)[0],
         './test-data/', filename))

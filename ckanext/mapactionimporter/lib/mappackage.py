@@ -114,9 +114,9 @@ def populate_dataset_dict_from_xml(et):
     dataset_dict = {}
     dataset_dict['title'] = join_lines(et.find('.//mapdata/title'))
 
-    operation_id = et.find('.//mapdata/operationID').text
-    map_number = et.find('.//mapdata/mapNumber').text
-    version_number = et.find('.//mapdata/versionNumber').text
+    operation_id = get_text_node(et, 'operationID')
+    map_number = get_text_node(et, 'mapNumber')
+    version_number = get_text_node(et, 'versionNumber')
     dataset_dict['name'] = slugify('%s %s %s' % (operation_id,
                                                  map_number, version_number))
 
@@ -137,3 +137,11 @@ def populate_dataset_dict_from_xml(et):
     ]
 
     return dataset_dict
+
+
+def get_text_node(et, name):
+    element = et.find('.//mapdata/{0}'.format(name))
+    if element is not None:
+        return element.text
+
+    raise MapPackageException(_("Unable to find mandatory field '{name}' in metadata".format(name=name)))

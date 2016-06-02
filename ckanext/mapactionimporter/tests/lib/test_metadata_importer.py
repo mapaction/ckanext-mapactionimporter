@@ -75,8 +75,22 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
         self.assertTrue('product_themes' not in dataset_dict)
 
+    def test_it_raises_when_mandatory_field_missing(self):
+        mandatory_fields = ('operationID',
+                            'mapNumber',
+                            'versionNumber')
+
+        for f in mandatory_fields:
+            et = self._parse_xml()
+
+            self._remove_from_etree(et, './/mapdata', f)
+
+            with self.assertRaises(mappackage.MapPackageException):
+                mappackage.populate_dataset_dict_from_xml(et)
+
     def test_name_includes_operation_id_map_number_and_version(self):
-        et = self._parse_xml(operationid='00123', mapnumber='MA001', versionnumber='02')
+        et = self._parse_xml(operationid='00123', mapnumber='MA001',
+                             versionnumber='02')
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
         self.assertEqual(dataset_dict['name'], '00123-ma001-02')
