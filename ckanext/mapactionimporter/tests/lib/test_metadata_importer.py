@@ -22,6 +22,9 @@ class TestMapMetadataToCkanExtras(unittest.TestCase):
     def test_operationID_excluded(self):
         self.assertNotIn('operationID', self.extras_dict)
 
+    def test_versionNumber_excluded(self):
+        self.assertNotIn('versionNumber', self.extras_dict)
+
 
 class TestPopulateDatasetDictFromXml(unittest.TestCase):
     template_xml = """<?xml version="1.0" encoding="utf-8"?>
@@ -103,6 +106,12 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
         self.assertEqual(dataset_dict['name'], '00123-ma001-v2')
+
+    def test_version_number_stored_in_ckan_version(self):
+        et = self._parse_xml(versionnumber='2')
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertEqual(dataset_dict['version'], 2)
 
     def _remove_from_etree(self, et, parent_xpath, child_xpath):
         for parent in et.findall(parent_xpath):

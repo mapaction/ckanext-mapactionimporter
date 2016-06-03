@@ -39,10 +39,11 @@ PRODUCT_THEMES = (
 
 
 EXCLUDE_TAGS = (
-    'status',
-    'title',
     'operationID',
+    'status',
     'theme',
+    'title',
+    'versionNumber',
 )
 
 
@@ -127,6 +128,8 @@ def populate_dataset_dict_from_xml(et):
     dataset_dict['name'] = slugify('%s %s v%s' % (operation_id,
                                                   map_number,
                                                   version_number))
+
+    dataset_dict['version'] = version_number
 
     theme = get_text_node(et, 'theme')
 
