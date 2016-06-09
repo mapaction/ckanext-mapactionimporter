@@ -248,6 +248,33 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
         nose.tools.assert_equal(parent_dataset['owner_org'],
                                 organization['id'])
 
+    def test_updated_version_replaces_existing(self):
+        organization = factories.Organization(user=self.user)
+        version_1 = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            context={'user': self.user['name']},
+            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            owner_org=organization['id']
+        )
+
+        nose.tools.assert_equal(version_1['name'], '189-ma001-v1')
+        nose.tools.assert_equal(version_1['notes'],
+                                'Example reference map of the Central African Republic.  This is an example map only and for testing use only')
+
+        version_1_update = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            upload=custom_helpers._UploadFile(
+                custom_helpers.get_correction_zip()))
+
+        nose.tools.assert_equal(version_1_update['name'], '189-ma001-v1')
+
+        latest_version = helpers.call_action(
+            'package_show',
+            context={'user': self.user['name']},
+            id='189-ma001')
+
+        nose.tools.assert_equal(latest_version['notes'], 'Updated summary')
+
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
     def test_it_raises_if_event_does_not_exist(self):

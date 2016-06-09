@@ -15,14 +15,14 @@ def create_dataset_from_zip(context, data_dict):
         msg = {'upload': [_('You must select a file to be imported')]}
         raise toolkit.ValidationError(msg)
 
-    private = data_dict.get('private', True)
-
     try:
         dataset_dict, file_paths, operation_id = mappackage.to_dataset(
             upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
+
+    private = data_dict.get('private', True)
 
     owner_org = data_dict.get('owner_org')
     if owner_org:
@@ -32,6 +32,22 @@ def create_dataset_from_zip(context, data_dict):
 
     dataset_dict['private'] = private
 
+    try:
+        toolkit.get_action('package_show')(
+            _get_context(context), {'id': dataset_dict['name']})
+        return _update_dataset(context, dataset_dict)
+    except logic.NotFound:
+        return _create_dataset(context, data_dict, dataset_dict, file_paths,
+                               operation_id, owner_org)
+
+
+def _update_dataset(context, dataset_dict):
+    return toolkit.get_action('package_update')(
+        _get_context(context), dataset_dict)
+
+
+def _create_dataset(context, data_dict, dataset_dict, file_paths, operation_id,
+                    owner_org):
     operation_id = operation_id.zfill(5)
 
     try:

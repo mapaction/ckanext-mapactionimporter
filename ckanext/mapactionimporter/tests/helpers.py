@@ -19,6 +19,10 @@ def get_update_zip():
     return get_test_file('MA001_Aptivate_Example_Update.zip')
 
 
+def get_correction_zip():
+    return get_test_file('MA001_Aptivate_Example_Correction.zip')
+
+
 def get_not_zip():
     return get_test_file('MA001_Aptivate_Example.txt')
 
