@@ -22,23 +22,15 @@ def create_dataset_from_zip(context, data_dict):
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
 
-    private = data_dict.get('private', True)
-
-    owner_org = data_dict.get('owner_org')
-    if owner_org:
-        update_dict['owner_org'] = owner_org
-    else:
-        private = False
-
-    update_dict['private'] = private
-
     try:
         old_dataset = toolkit.get_action('package_show')(
             _get_context(context), {'id': update_dict['name']})
+
         return _update_dataset(context, old_dataset, update_dict, file_paths)
+
     except logic.NotFound:
         return _create_dataset(context, data_dict, update_dict, file_paths,
-                               operation_id, owner_org)
+                               operation_id)
 
 
 def _update_dataset(context, dataset_dict, update_dict, file_paths):
@@ -69,8 +61,18 @@ def _update_dataset(context, dataset_dict, update_dict, file_paths):
         _get_context(context), dataset_dict)
 
 
-def _create_dataset(context, data_dict, update_dict, file_paths, operation_id,
-                    owner_org):
+def _create_dataset(context, data_dict, update_dict, file_paths, operation_id):
+    private = data_dict.get('private', True)
+
+    owner_org = data_dict.get('owner_org')
+
+    if owner_org:
+        update_dict['owner_org'] = owner_org
+    else:
+        private = False
+
+    update_dict['private'] = private
+
     operation_id = operation_id.zfill(5)
 
     try:

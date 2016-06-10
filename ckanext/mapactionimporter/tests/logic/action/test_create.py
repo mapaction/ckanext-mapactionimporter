@@ -279,6 +279,8 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
         )
 
     def test_updated_version_replaces_existing(self):
+        assert_true(self.dataset['private'])
+
         another_user = factories.User()
 
         helpers.call_action(
@@ -303,6 +305,7 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
         assert_equal(updated_dataset['name'], '189-ma001-v1')
         assert_equal(updated_dataset['notes'],
                      'Updated summary')
+        assert_true(updated_dataset['private'])
 
         updated_resources = sorted(updated_dataset['resources'],
                                    key=lambda k: k['format'])
@@ -348,6 +351,24 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
                            key=lambda k: k['format'])
         assert_equal(len(resources), 2)
         assert_equal(original_resources, resources)
+
+    def test_updated_dataset_public_if_original_public(self):
+        self.dataset['private'] = False
+
+        helpers.call_action(
+            'package_update',
+            context={'user': self.user['name']},
+            **self.dataset)
+
+        updated_dataset = helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            context={'user': self.user['name']},
+            upload=_UploadFile(
+                get_correction_zip()),
+            owner_org=self.organization['id']
+        )
+
+        assert_false(updated_dataset['private'])
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
