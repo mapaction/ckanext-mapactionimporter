@@ -282,10 +282,31 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
                 "Status is 'Correction' but dataset '189-ma001-v1' does not exist"
             })
 
+    def test_error_when_status_is_update_and_dataset_exists(self):
+        helpers.call_action(
+            'create_dataset_from_mapaction_zip',
+            context={'user': self.user['name']},
+            upload=_UploadFile(get_update_zip()),
+        )
 
-class TestUpdateExistingDataset(TestDatasetForEvent):
+        with assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                context={'user': self.user['name']},
+                upload=_UploadFile(get_update_zip())
+            )
+
+        assert_equal(
+            cm.exception.error_summary,
+            {
+                'Upload':
+                "Status is 'Update' but dataset '189-ma001-v2' already exists"
+            })
+
+
+class TestCorrectExistingDataset(TestDatasetForEvent):
     def setup(self):
-        super(TestUpdateExistingDataset, self).setup()
+        super(TestCorrectExistingDataset, self).setup()
         self.organization = factories.Organization(user=self.user)
         self.dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',

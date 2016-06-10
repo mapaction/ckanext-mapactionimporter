@@ -25,17 +25,17 @@ def create_dataset_from_zip(context, data_dict):
         old_dataset = toolkit.get_action('package_show')(
             _get_context(context), {'id': dataset_info['name']})
 
-        if dataset_info['status'] == 'New':
-            msg = {'upload': [_("Status is '{new}' but dataset '{name}' already exists").format(
-                new='New', name=dataset_info['name'])]}
+        if dataset_info['status'] in ('New', 'Update'):
+            msg = {'upload': [_("Status is '{status}' but dataset '{name}' already exists").format(
+                status=dataset_info['status'], name=dataset_info['name'])]}
             raise toolkit.ValidationError(msg)
 
         return _update_dataset(context, old_dataset, dataset_info)
 
     except logic.NotFound:
         if dataset_info['status'] == 'Correction':
-            msg = {'upload': [_("Status is '{correction}' but dataset '{name}' does not exist").format(
-                correction='Correction', name=dataset_info['name'])]}
+            msg = {'upload': [_("Status is '{status}' but dataset '{name}' does not exist").format(
+                status=dataset_info['status'], name=dataset_info['name'])]}
             raise toolkit.ValidationError(msg)
 
         return _create_dataset(context, data_dict, dataset_info)
