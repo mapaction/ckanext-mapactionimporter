@@ -42,13 +42,23 @@ def create_dataset_from_zip(context, data_dict):
 
 
 def _update_dataset(context, dataset_dict, update_dict, file_paths):
-    resources = dataset_dict.pop('resources')
+    old_resource_ids = [r['id'] for r in dataset_dict.pop('resources')]
 
-    for resource in resources:
+    try:
+        _create_resources(context, dataset_dict, file_paths)
+    except Exception as e:
+        # Resource creation failed, rollback
+        dataset_dict = toolkit.get_action('package_show')(
+            _get_context(context), {'id': dataset_dict['id']})
+        for resource in dataset_dict['resources']:
+            if resource['id'] not in old_resource_ids:
+                toolkit.get_action('resource_delete')(
+                    _get_context(context), {'id': resource['id']})
+        raise e
+
+    for resource_id in old_resource_ids:
         toolkit.get_action('resource_delete')(
-            _get_context(context), {'id': resource['id']})
-
-    _create_resources(context, dataset_dict, file_paths)
+            _get_context(context), {'id': resource_id})
 
     dataset_dict = toolkit.get_action('package_show')(
         _get_context(context), {'id': dataset_dict['id']})
