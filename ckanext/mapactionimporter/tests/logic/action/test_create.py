@@ -1,14 +1,26 @@
-import nose.tools
-
-import ckan.logic as logic
 import ckan.tests.helpers as helpers
 import ckan.tests.factories as factories
-import ckanext.mapactionimporter.tests.helpers as custom_helpers
 import ckan.plugins.toolkit as toolkit
 import ckan.lib.uploader as uploader
 
+from ckanext.mapactionimporter.tests.helpers import (
+    FunctionalTestBaseClass,
+    assert_equal,
+    assert_false,
+    assert_raises,
+    assert_true,
+    get_correction_zip,
+    get_missing_fields_zip,
+    get_not_zip,
+    get_special_characters_zip,
+    get_test_zip,
+    get_update_zip,
+    get_zip_empty_metadata,
+    get_zip_no_metadata,
+)
 
-class TestCreateDatasetFromZip(custom_helpers.FunctionalTestBaseClass):
+
+class TestCreateDatasetFromZip(FunctionalTestBaseClass):
     def setup(self):
         super(TestCreateDatasetFromZip, self).setup()
         self.user = factories.User()
@@ -33,13 +45,13 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
     def test_it_allows_uploading_a_zipfile(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
+            upload=_UploadFile(get_test_zip()))
 
-        nose.tools.assert_equal(
+        assert_equal(
             dataset['title'],
             'Central African Republic: Example Map- Reference (as of 3 Feb 2099)')
 
-        nose.tools.assert_equal(
+        assert_equal(
             dataset['name'],
             '189-ma001-v1')
 
@@ -48,8 +60,8 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
         resources = dataset['resources']
         extras = dataset['extras']
 
-        nose.tools.assert_equals(len(resources), 2)
-        nose.tools.assert_true(len(extras) > 0)
+        assert_equal(len(resources), 2)
+        assert_true(len(extras) > 0)
 
         sorted_resources = sorted(resources, key=lambda k: k['format'])
 
@@ -67,130 +79,130 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': self.user['id']},
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            upload=_UploadFile(get_test_zip()),
             owner_org=organization['id'])
-        nose.tools.assert_true(dataset['private'])
+        assert_true(dataset['private'])
 
     def test_dataset_public_when_no_organization_specified(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
-        nose.tools.assert_false(dataset['private'])
+            upload=_UploadFile(get_test_zip()))
+        assert_false(dataset['private'])
 
     def test_dataset_notes_set_to_xml_summary(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
+            upload=_UploadFile(get_test_zip()))
 
         summary = ("Example reference map of the Central African Republic.  This "
                    "is an example map only and for testing use only")
-        nose.tools.assert_equal(dataset['notes'], summary)
+        assert_equal(dataset['notes'], summary)
 
     def test_dataset_license_defaults_to_not_specified(self):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()))
-        nose.tools.assert_equals(dataset['license_id'], 'notspecified')
+            upload=_UploadFile(get_test_zip()))
+        assert_equal(dataset['license_id'], 'notspecified')
 
     def _check_uploaded_resource(self, resource, expected_format,
                                  expected_name,
                                  expected_basename):
-        nose.tools.assert_equal(resource['url_type'], 'upload')
-        nose.tools.assert_equal(resource['format'], expected_format)
-        nose.tools.assert_equal(resource['name'], expected_name)
+        assert_equal(resource['url_type'], 'upload')
+        assert_equal(resource['format'], expected_format)
+        assert_equal(resource['name'], expected_name)
 
         basename = resource['url'].split('/')[-1]
-        nose.tools.assert_equal(basename, expected_basename)
+        assert_equal(basename, expected_basename)
 
     def test_it_raises_if_no_zip_file(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
                 upload=u''
             )
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  'You must select a file to be imported'})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      'You must select a file to be imported'})
 
     def test_it_raises_if_not_a_zip_file(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_not_zip()))
+                upload=_UploadFile(get_not_zip()))
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  'File is not a zip file'})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      'File is not a zip file'})
 
     def test_it_raises_if_no_metadata(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_zip_no_metadata()))
+                upload=_UploadFile(get_zip_no_metadata()))
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  'Could not find metadata XML in zip file'})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      'Could not find metadata XML in zip file'})
 
     def test_it_raises_if_empty_metadata(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_zip_empty_metadata()))
+                upload=_UploadFile(get_zip_empty_metadata()))
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  "Error parsing XML: 'no element found: line 1, column 0'"})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      "Error parsing XML: 'no element found: line 1, column 0'"})
 
     def test_it_tidies_up_if_resource_creation_fails(self):
         old_max_resource_size = uploader._max_resource_size
         uploader._max_resource_size = 1
 
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_test_zip()))
+                upload=_UploadFile(get_test_zip()))
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  'File upload too large'})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      'File upload too large'})
 
         datasets = helpers.call_action(
             'package_list',
             context={'user': self.user['name']})
 
         # The dataset will be in the trash so won't appear here
-        nose.tools.assert_equals(len(datasets), 0)
+        assert_equal(len(datasets), 0)
 
         uploader._max_resource_size = old_max_resource_size
 
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=_UploadFile(custom_helpers.get_test_zip()))
+            upload=_UploadFile(get_test_zip()))
 
-        nose.tools.assert_equal(
+        assert_equal(
             dataset['name'],
             '189-ma001-v1')
 
     def test_it_raises_if_file_has_special_characters(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_special_characters_zip()))
+                upload=_UploadFile(get_special_characters_zip()))
 
-        nose.tools.assert_equals(cm.exception.error_summary, {
+        assert_equal(cm.exception.error_summary, {
             'Upload':
             "Error parsing XML: 'not well-formed (invalid token): line 22, column 47'",
         })
 
     def test_it_raises_if_mandatory_fields_missing(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_missing_fields_zip()))
+                upload=_UploadFile(get_missing_fields_zip()))
 
-        nose.tools.assert_equals(cm.exception.error_summary, {
+        assert_equal(cm.exception.error_summary, {
             'Upload':
             "Unable to find mandatory field 'operationID' in metadata",
         })
@@ -199,7 +211,7 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
         dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': self.user['name']},
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            upload=_UploadFile(get_test_zip()),
         )
 
         dataset = helpers.call_action(
@@ -208,25 +220,25 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
             id=dataset['id'])
         events = dataset['groups']
 
-        nose.tools.assert_equals(len(events), 1)
-        nose.tools.assert_equals(events[0]['name'], '00189')
+        assert_equal(len(events), 1)
+        assert_equal(events[0]['name'], '00189')
 
     def test_new_version_associated_with_existing(self):
         organization = factories.Organization(user=self.user)
         version_1 = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': self.user['name']},
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            upload=_UploadFile(get_test_zip()),
             owner_org=organization['id']
         )
 
-        nose.tools.assert_equal(version_1['name'], '189-ma001-v1')
+        assert_equal(version_1['name'], '189-ma001-v1')
 
         version_2 = helpers.call_action(
             'create_dataset_from_mapaction_zip',
-            upload=custom_helpers._UploadFile(custom_helpers.get_update_zip()))
+            upload=_UploadFile(get_update_zip()))
 
-        nose.tools.assert_equal(version_2['name'], '189-ma001-v2')
+        assert_equal(version_2['name'], '189-ma001-v2')
 
         [rel_1] = helpers.call_action(
             'package_relationships_list',
@@ -238,21 +250,21 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
             id=version_2['id'],
             rel='child_of')
 
-        nose.tools.assert_equal(rel_1['subject'], '189-ma001-v1')
-        nose.tools.assert_equal(rel_1['type'], 'child_of')
-        nose.tools.assert_equal(rel_1['object'], '189-ma001')
+        assert_equal(rel_1['subject'], '189-ma001-v1')
+        assert_equal(rel_1['type'], 'child_of')
+        assert_equal(rel_1['object'], '189-ma001')
 
-        nose.tools.assert_equal(rel_2['subject'], '189-ma001-v2')
-        nose.tools.assert_equal(rel_2['type'], 'child_of')
-        nose.tools.assert_equal(rel_2['object'], '189-ma001')
+        assert_equal(rel_2['subject'], '189-ma001-v2')
+        assert_equal(rel_2['type'], 'child_of')
+        assert_equal(rel_2['object'], '189-ma001')
 
         parent_dataset = helpers.call_action(
             'ckan_package_show',
             context={'user': self.user['name']},
             id='189-ma001')
 
-        nose.tools.assert_equal(parent_dataset['owner_org'],
-                                organization['id'])
+        assert_equal(parent_dataset['owner_org'],
+                     organization['id'])
 
 
 class TestUpdateExistingDataset(TestDatasetForEvent):
@@ -262,7 +274,7 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
         self.dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': self.user['name']},
-            upload=custom_helpers._UploadFile(custom_helpers.get_test_zip()),
+            upload=_UploadFile(get_test_zip()),
             owner_org=self.organization['id']
         )
 
@@ -278,27 +290,27 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
 
         original_resources = sorted(self.dataset['resources'],
                                     key=lambda k: k['format'])
-        nose.tools.assert_equals(len(original_resources), 2)
+        assert_equal(len(original_resources), 2)
 
         updated_dataset = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': another_user['name']},
-            upload=custom_helpers._UploadFile(
-                custom_helpers.get_correction_zip()),
+            upload=_UploadFile(
+                get_correction_zip()),
             owner_org=self.organization['id']
         )
 
-        nose.tools.assert_equal(updated_dataset['name'], '189-ma001-v1')
-        nose.tools.assert_equal(updated_dataset['notes'],
-                                'Updated summary')
+        assert_equal(updated_dataset['name'], '189-ma001-v1')
+        assert_equal(updated_dataset['notes'],
+                     'Updated summary')
 
         updated_resources = sorted(updated_dataset['resources'],
                                    key=lambda k: k['format'])
-        nose.tools.assert_equals(len(updated_resources), 2)
+        assert_equal(len(updated_resources), 2)
 
-        nose.tools.assert_true(
+        assert_true(
             original_resources[0]['id'] != updated_resources[0]['id'])
-        nose.tools.assert_true(
+        assert_true(
             original_resources[1]['id'] != updated_resources[1]['id'])
 
     def test_nothing_changed_if_resource_update_fails(self):
@@ -307,45 +319,45 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
 
         original_resources = sorted(self.dataset['resources'],
                                     key=lambda k: k['format'])
-        nose.tools.assert_equals(len(original_resources), 2)
+        assert_equal(len(original_resources), 2)
 
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
                 context={'user': self.user['name']},
-                upload=custom_helpers._UploadFile(
-                    custom_helpers.get_correction_zip()),
+                upload=_UploadFile(
+                    get_correction_zip()),
                 owner_org=self.organization['id']
             )
 
         uploader._max_resource_size = old_max_resource_size
 
-        nose.tools.assert_equals(cm.exception.error_summary,
-                                 {'Upload':
-                                  'File upload too large'})
+        assert_equal(cm.exception.error_summary,
+                     {'Upload':
+                      'File upload too large'})
         dataset = helpers.call_action(
             'package_show',
             id='189-ma001-v1')
 
-        nose.tools.assert_equals(
+        assert_equal(
             dataset['notes'],
             ("Example reference map of the Central African Republic.  This "
              "is an example map only and for testing use only"))
 
         resources = sorted(dataset['resources'],
                            key=lambda k: k['format'])
-        nose.tools.assert_equals(len(resources), 2)
-        nose.tools.assert_equals(original_resources, resources)
+        assert_equal(len(resources), 2)
+        assert_equal(original_resources, resources)
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
     def test_it_raises_if_event_does_not_exist(self):
-        with nose.tools.assert_raises(toolkit.ValidationError) as cm:
+        with assert_raises(toolkit.ValidationError) as cm:
             helpers.call_action(
                 'create_dataset_from_mapaction_zip',
-                upload=_UploadFile(custom_helpers.get_test_zip()))
+                upload=_UploadFile(get_test_zip()))
 
-        nose.tools.assert_equals(cm.exception.error_summary, {
+        assert_equal(cm.exception.error_summary, {
             'Upload':
             "Event with operationID '00189' does not exist",
         })

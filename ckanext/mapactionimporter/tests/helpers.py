@@ -1,10 +1,16 @@
-'''Test helper functions and classes.'''
+import nose.tools
 import os
 
 import ckan.tests.helpers as helpers
 import ckan.plugins as plugins
 
 from ckanext.mapactionimporter.plugin import create_product_themes
+
+assert_equal = nose.tools.assert_equal
+assert_false = nose.tools.assert_false
+assert_raises = nose.tools.assert_raises
+assert_regexp_matches = nose.tools.assert_regexp_matches
+assert_true = nose.tools.assert_true
 
 
 def get_test_xml():
@@ -46,12 +52,6 @@ def get_missing_fields_zip():
 def get_test_file(filename):
     return file(os.path.join(os.path.split(__file__)[0],
         './test-data/', filename))
-
-
-class _UploadFile(object):
-    '''Mock the parts from cgi.FileStorage we use.'''
-    def __init__(self, fp):
-        self.file = fp
 
 
 class FunctionalTestBaseClass(helpers.FunctionalTestBase):
