@@ -33,6 +33,11 @@ def create_dataset_from_zip(context, data_dict):
         return _update_dataset(context, old_dataset, dataset_info)
 
     except logic.NotFound:
+        if dataset_info['status'] == 'Correction':
+            msg = {'upload': [_("Status is '{correction}' but dataset '{name}' does not exist").format(
+                correction='Correction', name=dataset_info['name'])]}
+            raise toolkit.ValidationError(msg)
+
         return _create_dataset(context, data_dict, dataset_info)
 
 

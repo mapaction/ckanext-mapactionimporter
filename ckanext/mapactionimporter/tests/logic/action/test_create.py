@@ -266,6 +266,22 @@ class TestCreateDatasetForEvent(TestDatasetForEvent):
         assert_equal(parent_dataset['owner_org'],
                      organization['id'])
 
+    def test_error_when_status_is_correction(self):
+        with assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                context={'user': self.user['name']},
+                upload=_UploadFile(
+                    get_correction_zip())
+            )
+
+        assert_equal(
+            cm.exception.error_summary,
+            {
+                'Upload':
+                "Status is 'Correction' but dataset '189-ma001-v1' does not exist"
+            })
+
 
 class TestUpdateExistingDataset(TestDatasetForEvent):
     def setup(self):
