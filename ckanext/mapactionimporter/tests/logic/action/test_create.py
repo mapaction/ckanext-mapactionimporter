@@ -42,7 +42,7 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
         resources = dataset['resources']
         extras = dataset['extras']
 
-        nose.tools.assert_true(len(resources) == 2)
+        nose.tools.assert_equals(len(resources), 2)
         nose.tools.assert_true(len(extras) > 0)
 
         sorted_resources = sorted(resources, key=lambda k: k['format'])
@@ -249,7 +249,16 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
                                 organization['id'])
 
     def test_updated_version_replaces_existing(self):
+        another_user = factories.User()
         organization = factories.Organization(user=self.user)
+
+        helpers.call_action(
+            'member_create',
+            id=organization['id'],
+            object=another_user['id'],
+            object_type='user',
+            capacity='editor')
+
         version_1 = helpers.call_action(
             'create_dataset_from_mapaction_zip',
             context={'user': self.user['name']},
@@ -257,23 +266,33 @@ class TestCreateDatasetForEvent(TestCreateDatasetFromZip):
             owner_org=organization['id']
         )
 
+        original_resources = sorted(version_1['resources'],
+                                    key=lambda k: k['format'])
+        nose.tools.assert_equals(len(original_resources), 2)
+
         nose.tools.assert_equal(version_1['name'], '189-ma001-v1')
         nose.tools.assert_equal(version_1['notes'],
                                 'Example reference map of the Central African Republic.  This is an example map only and for testing use only')
 
         version_1_update = helpers.call_action(
             'create_dataset_from_mapaction_zip',
+            context={'user': another_user['name']},
             upload=custom_helpers._UploadFile(
-                custom_helpers.get_correction_zip()))
+                custom_helpers.get_correction_zip()),
+            owner_org=organization['id']
+        )
 
         nose.tools.assert_equal(version_1_update['name'], '189-ma001-v1')
+        nose.tools.assert_equal(version_1_update['notes'], 'Updated summary')
 
-        latest_version = helpers.call_action(
-            'package_show',
-            context={'user': self.user['name']},
-            id='189-ma001')
+        updated_resources = sorted(version_1_update['resources'],
+                                   key=lambda k: k['format'])
+        nose.tools.assert_equals(len(updated_resources), 2)
 
-        nose.tools.assert_equal(latest_version['notes'], 'Updated summary')
+        nose.tools.assert_true(
+            original_resources[0]['id'] != updated_resources[0]['id'])
+        nose.tools.assert_true(
+            original_resources[1]['id'] != updated_resources[1]['id'])
 
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):

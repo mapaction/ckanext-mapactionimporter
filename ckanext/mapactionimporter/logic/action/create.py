@@ -16,7 +16,7 @@ def create_dataset_from_zip(context, data_dict):
         raise toolkit.ValidationError(msg)
 
     try:
-        dataset_dict, file_paths, operation_id = mappackage.to_dataset(
+        update_dict, file_paths, operation_id = mappackage.to_dataset(
             upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
@@ -26,27 +26,40 @@ def create_dataset_from_zip(context, data_dict):
 
     owner_org = data_dict.get('owner_org')
     if owner_org:
-        dataset_dict['owner_org'] = owner_org
+        update_dict['owner_org'] = owner_org
     else:
         private = False
 
-    dataset_dict['private'] = private
+    update_dict['private'] = private
 
     try:
-        toolkit.get_action('package_show')(
-            _get_context(context), {'id': dataset_dict['name']})
-        return _update_dataset(context, dataset_dict)
+        old_dataset = toolkit.get_action('package_show')(
+            _get_context(context), {'id': update_dict['name']})
+        return _update_dataset(context, old_dataset, update_dict, file_paths)
     except logic.NotFound:
-        return _create_dataset(context, data_dict, dataset_dict, file_paths,
+        return _create_dataset(context, data_dict, update_dict, file_paths,
                                operation_id, owner_org)
 
 
-def _update_dataset(context, dataset_dict):
+def _update_dataset(context, dataset_dict, update_dict, file_paths):
+    resources = dataset_dict.pop('resources')
+
+    for resource in resources:
+        toolkit.get_action('resource_delete')(
+            _get_context(context), {'id': resource['id']})
+
+    _create_resources(context, dataset_dict, file_paths)
+
+    dataset_dict = toolkit.get_action('package_show')(
+        _get_context(context), {'id': dataset_dict['id']})
+
+    dataset_dict.update(update_dict)
+
     return toolkit.get_action('package_update')(
         _get_context(context), dataset_dict)
 
 
-def _create_dataset(context, data_dict, dataset_dict, file_paths, operation_id,
+def _create_dataset(context, data_dict, update_dict, file_paths, operation_id,
                     owner_org):
     operation_id = operation_id.zfill(5)
 
@@ -61,20 +74,15 @@ def _create_dataset(context, data_dict, dataset_dict, file_paths, operation_id,
 
     # TODO:
     # If we do this, we get an error "User foo not authorized to edit these groups
-    # dataset_dict['groups'] = [{'name': operation_id]
+    # update_dict['groups'] = [{'name': operation_id]
 
-    final_name = dataset_dict['name']
-    dataset_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
+    final_name = update_dict['name']
+    update_dict['name'] = '{0}-{1}'.format(final_name, uuid.uuid4())
     dataset = toolkit.get_action('package_create')(
-        _get_context(context), dataset_dict)
+        _get_context(context), update_dict)
 
     try:
-        for resource_file in file_paths:
-            resource = {
-                'package_id': dataset['id'],
-                'path': resource_file,
-            }
-            _create_and_upload_local_resource(_get_context(context), resource)
+        _create_resources(context, dataset, file_paths)
     except:
         toolkit.get_action('package_delete')(_get_context(context),
                                              {'id': dataset['id']})
@@ -87,13 +95,13 @@ def _create_dataset(context, data_dict, dataset_dict, file_paths, operation_id,
         'capacity': 'member',  # TODO: What does capacity mean in this context?
     })
 
-    dataset_dict = toolkit.get_action('package_show')(
+    update_dict = toolkit.get_action('package_show')(
         context, {'id': dataset['id']})
-    dataset_dict['name'] = final_name
+    update_dict['name'] = final_name
 
     try:
         dataset = toolkit.get_action('package_update')(
-            _get_context(context), dataset_dict)
+            _get_context(context), update_dict)
     except toolkit.ValidationError as e:
         if _('That URL is already in use.') in e.error_dict.get('name', []):
             e.error_dict['name'] = [_('"%s" already exists.' % final_name)]
@@ -112,6 +120,16 @@ def _create_dataset(context, data_dict, dataset_dict, file_paths, operation_id,
     )
 
     return dataset
+
+
+def _create_resources(context, dataset, file_paths):
+    for resource_file in file_paths:
+        resource = {
+            'package_id': dataset['id'],
+            'path': resource_file,
+        }
+        _create_and_upload_local_resource(
+            _get_context(context), resource)
 
 
 def _get_context(context):
