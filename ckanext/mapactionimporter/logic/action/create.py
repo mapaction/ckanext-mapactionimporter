@@ -16,28 +16,31 @@ def create_dataset_from_zip(context, data_dict):
         raise toolkit.ValidationError(msg)
 
     try:
-        update_dict, file_paths, operation_id = mappackage.to_dataset(
-            upload.file)
+        dataset_info = mappackage.to_dataset(upload.file)
     except (mappackage.MapPackageException) as e:
         msg = {'upload': [e.args[0]]}
         raise toolkit.ValidationError(msg)
 
     try:
         old_dataset = toolkit.get_action('package_show')(
-            _get_context(context), {'id': update_dict['name']})
+            _get_context(context), {'id': dataset_info['name']})
 
-        return _update_dataset(context, old_dataset, update_dict, file_paths)
+        if dataset_info['status'] == 'New':
+            msg = {'upload': [_("Status is '{new}' but dataset '{name}' already exists").format(
+                new='New', name=dataset_info['name'])]}
+            raise toolkit.ValidationError(msg)
+
+        return _update_dataset(context, old_dataset, dataset_info)
 
     except logic.NotFound:
-        return _create_dataset(context, data_dict, update_dict, file_paths,
-                               operation_id)
+        return _create_dataset(context, data_dict, dataset_info)
 
 
-def _update_dataset(context, dataset_dict, update_dict, file_paths):
+def _update_dataset(context, dataset_dict, dataset_info):
     old_resource_ids = [r['id'] for r in dataset_dict.pop('resources')]
 
     try:
-        _create_resources(context, dataset_dict, file_paths)
+        _create_resources(context, dataset_dict, dataset_info['file_paths'])
     except Exception as e:
         # Resource creation failed, rollback
         dataset_dict = toolkit.get_action('package_show')(
@@ -55,16 +58,18 @@ def _update_dataset(context, dataset_dict, update_dict, file_paths):
     dataset_dict = toolkit.get_action('package_show')(
         _get_context(context), {'id': dataset_dict['id']})
 
-    dataset_dict.update(update_dict)
+    dataset_dict.update(dataset_info['dataset_dict'])
 
     return toolkit.get_action('package_update')(
         _get_context(context), dataset_dict)
 
 
-def _create_dataset(context, data_dict, update_dict, file_paths, operation_id):
+def _create_dataset(context, data_dict, dataset_info):
     private = data_dict.get('private', True)
 
     owner_org = data_dict.get('owner_org')
+
+    update_dict = dataset_info['dataset_dict']
 
     if owner_org:
         update_dict['owner_org'] = owner_org
@@ -73,15 +78,16 @@ def _create_dataset(context, data_dict, update_dict, file_paths, operation_id):
 
     update_dict['private'] = private
 
-    operation_id = operation_id.zfill(5)
+    operation_id = dataset_info['operation_id'].zfill(5)
 
     try:
         toolkit.get_action('group_show')(
             _get_context(context),
             data_dict={'type': 'event', 'id': operation_id})
     except (logic.NotFound) as e:
-        msg = {'upload': [_("Event with operationID '{0}' does not exist").format(
-            operation_id)]}
+        msg = {'upload': [
+            _("Event with operationID '{0}' does not exist").format(
+                operation_id)]}
         raise toolkit.ValidationError(msg)
 
     # TODO:
@@ -94,7 +100,7 @@ def _create_dataset(context, data_dict, update_dict, file_paths, operation_id):
         _get_context(context), update_dict)
 
     try:
-        _create_resources(context, dataset, file_paths)
+        _create_resources(context, dataset, dataset_info['file_paths'])
     except:
         toolkit.get_action('package_delete')(_get_context(context),
                                              {'id': dataset['id']})

@@ -102,12 +102,18 @@ def to_dataset(map_package):
             e.msg.args[0])))
 
     dataset_dict = populate_dataset_dict_from_xml(et)
-    operation_id = get_mandatory_text_node(et, 'operationID')
-
     # Not currently in the metadata
     dataset_dict['license_id'] = 'notspecified'
 
-    return (dataset_dict, file_paths, operation_id)
+    dataset_info = {
+        'status': get_mandatory_text_node(et, 'status'),
+        'dataset_dict': dataset_dict,
+        'file_paths': file_paths,
+        'name': dataset_dict['name'],
+        'operation_id': get_mandatory_text_node(et, 'operationID'),
+    }
+
+    return dataset_info
 
 
 def populate_dataset_dict_from_xml(et):

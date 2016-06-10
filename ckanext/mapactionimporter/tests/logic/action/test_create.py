@@ -370,6 +370,23 @@ class TestUpdateExistingDataset(TestDatasetForEvent):
 
         assert_false(updated_dataset['private'])
 
+    def test_error_when_status_not_correction(self):
+        with assert_raises(toolkit.ValidationError) as cm:
+            helpers.call_action(
+                'create_dataset_from_mapaction_zip',
+                context={'user': self.user['name']},
+                upload=_UploadFile(
+                    get_test_zip()),
+                owner_org=self.organization['id']
+            )
+
+        assert_equal(
+            cm.exception.error_summary,
+            {
+                'Upload':
+                "Status is 'New' but dataset '189-ma001-v1' already exists"
+            })
+
 
 class TestCreateDatasetForNoEvent(TestCreateDatasetFromZip):
     def test_it_raises_if_event_does_not_exist(self):
