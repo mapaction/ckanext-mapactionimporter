@@ -42,6 +42,7 @@ EXCLUDE_TAGS = (
     'operationID',
     'status',
     'theme',
+    'themes',
     'title',
     'versionNumber',
 )
