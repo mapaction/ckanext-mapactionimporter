@@ -2,7 +2,7 @@ import unittest
 
 import ckanext.mapactionimporter.tests.helpers as custom_helpers
 
-from defusedxml.ElementTree import parse, fromstring
+from lxml.etree import parse, fromstring, Element
 from ckanext.mapactionimporter.lib import mappackage
 
 
@@ -34,7 +34,9 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
     <title>{title}</title>
     <ref>{ref}</ref>
     <summary>{summary}</summary>
-    <theme>Orientation and Reference</theme>
+    <themes>
+      <theme>{theme}</theme>
+    </themes>
     <mapNumber>{mapnumber}</mapNumber>
     <versionNumber>{versionnumber}</versionNumber>
   </mapdata>
@@ -72,11 +74,30 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
 
     def test_no_themes_when_missing(self):
         et = self._parse_xml()
-        self._remove_from_etree(et, './/mapdata', 'theme')
 
         dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
 
         self.assertTrue('product_themes' not in dataset_dict)
+
+    def test_theme_stored_in_product_themes(self):
+        et = self._parse_xml(theme='Orientation and Reference')
+
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertTrue('Orientation and Reference' in
+                        dataset_dict['product_themes'])
+
+    def test_multiple_themes_stored_in_product_themes(self):
+        et = self._parse_xml(theme='Orientation and Reference')
+        self._add_to_etree(et, './/mapdata/themes', 'theme',
+                           'Affected Population')
+
+        dataset_dict = mappackage.populate_dataset_dict_from_xml(et)
+
+        self.assertTrue('Orientation and Reference' in
+                        dataset_dict['product_themes'])
+        self.assertTrue('Affected Population' in
+                        dataset_dict['product_themes'])
 
     def test_it_raises_when_mandatory_field_missing(self):
         mandatory_fields = ('operationID',
@@ -117,6 +138,12 @@ class TestPopulateDatasetDictFromXml(unittest.TestCase):
         for parent in et.findall(parent_xpath):
             for child in parent.findall(child_xpath):
                 parent.remove(child)
+
+    def _add_to_etree(self, et, parent_xpath, name, text):
+        for parent in et.findall(parent_xpath):
+            child = Element(name)
+            child.text = text
+            parent.append(child)
 
     def _parse_xml(self, **kwargs):
         defaults = {

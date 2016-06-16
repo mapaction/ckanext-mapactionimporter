@@ -137,13 +137,13 @@ def populate_dataset_dict_from_xml(et):
 
     dataset_dict['version'] = version_number
 
-    theme = get_text_node(et, 'theme')
-
-    if theme is not None:
-        if theme in PRODUCT_THEMES:
-            dataset_dict['product_themes'] = [theme]
+    for theme in et.findall('.//mapdata//theme'):
+        if theme.text in PRODUCT_THEMES:
+            dataset_dict.setdefault('product_themes', []).append(theme.text)
         else:
-            log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
+            log.error(
+                "Product theme '{0}' not defined in PRODUCT_THEMES".format(
+                    theme.text))
 
     summary = get_text_node(et, 'summary')
     dataset_dict['notes'] = join_lines(summary)
