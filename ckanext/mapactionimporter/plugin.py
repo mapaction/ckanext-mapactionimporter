@@ -2,6 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.mapactionimporter.logic.action.create
 
+from collections import OrderedDict
 from .lib.mappackage import PRODUCT_THEMES
 
 def register_translator():
@@ -50,7 +51,12 @@ def create_product_themes():
 def product_themes(query=None):
     try:
         tag_list = toolkit.get_action('tag_list')
-        product_themes = tag_list(data_dict={'vocabulary_id': 'product_themes', 'all_fields': True, 'query': query})
+        product_themes = tag_list(
+            data_dict={
+                'vocabulary_id': 'product_themes',
+                'all_fields': True,
+                'query': query
+            })
         return product_themes
     except toolkit.ObjectNotFound:
         return []
@@ -66,7 +72,33 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
     # IFacets
     def dataset_facets(self, facets_dict, package_type):
-        facets_dict['vocab_product_themes'] = plugins.toolkit._('Theme')
+        #insert the Theme facet after Groups if it's there.
+        facets = facets_dict.items()
+        keys = facets_dict.keys()
+        facets_dict.clear()
+
+        position = 0 #default to the start.
+
+        if 'groups' in keys:
+            position = keys.index('groups') + 1
+
+        facets.insert(position, ('vocab_product_themes', plugins.toolkit._('Themes')))
+
+        for item in facets:
+            facets_dict[item[0]] = item[1]
+
+        return facets_dict
+
+
+    def group_facets(self, facets_dict, group_type, package_type):
+        #insert the Theme facet at the beginning
+        facets = facets_dict.items()
+        facets_dict.clear()
+
+        facets_dict['vocab_product_themes'] = plugins.toolkit._('Themes')
+        for item in facets:
+            facets_dict[item[0]] = item[1]
+
         return facets_dict
 
 
@@ -77,7 +109,7 @@ class MapactionimporterPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetFor
 
     def before_map(self, map_):
         map_.connect(
-            'import_mapactionzip',
+            'import_mapactionzip_form',
             '/import_mapactionzip',
             controller='ckanext.mapactionimporter.controllers.zipimport:ZipImportController',
             action='new',

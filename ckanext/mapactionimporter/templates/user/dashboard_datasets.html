@@ -2,7 +2,5 @@
 
 {% block page_primary_action %}
   {{ super() }}
-  {% if h.check_access('package_create') %}
-    {% link_for _('Import MapAction Zip File'), controller='ckanext.mapactionimporter.controllers.zipimport:ZipImportController', action='new', class_='btn', icon='plus-sign-alt' %}
-  {% endif %}
+  {% snippet 'mapactionimporter/snippets/import_button.html' %}
 {% endblock %}

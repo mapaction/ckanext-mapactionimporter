@@ -1,4 +1,4 @@
-# -*- coding: UTF8 -*-
+# -*- coding: utf-8 -*-
 
 import nose.tools
 
@@ -18,7 +18,7 @@ class TestThemeVocab(custom_helpers.FunctionalTestBaseClass):
 
     def test_set_multiple_themes_on_dataset(self):
 
-        app = custom_helpers._get_test_app()
+        app = self._get_test_app()
         user = factories.User()
         organization = factories.Organization(user=user)
         group_189 = factories.Group(name='00189', user=user)

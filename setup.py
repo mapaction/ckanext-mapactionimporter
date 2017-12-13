@@ -83,6 +83,7 @@ setup(
     entry_points='''
         [ckan.plugins]
         mapactionimporter=ckanext.mapactionimporter.plugin:MapactionimporterPlugin
+        datasetversions=ckanext.datasetversions.plugin:DatasetversionsPlugin
         [paste.paster_command]
         mapactionimporter=ckanext.mapactionimporter.commands:MapactionImporterCommand
         [babel.extractors]

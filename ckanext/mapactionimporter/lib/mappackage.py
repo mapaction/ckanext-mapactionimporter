@@ -39,10 +39,12 @@ PRODUCT_THEMES = (
 
 
 EXCLUDE_TAGS = (
-    'status',
-    'title',
     'operationID',
+    'status',
     'theme',
+    'themes',
+    'title',
+    'versionNumber',
 )
 
 
@@ -101,30 +103,78 @@ def to_dataset(map_package):
             e.msg.args[0])))
 
     dataset_dict = populate_dataset_dict_from_xml(et)
-    operation_id = et.find('.//mapdata/operationID').text
+    # Not currently in the metadata
+    dataset_dict['license_id'] = 'notspecified'
 
-    return (dataset_dict, file_paths, operation_id)
+    dataset_info = {
+        'status': get_mandatory_text_node(et, 'status'),
+        'dataset_dict': dataset_dict,
+        'file_paths': file_paths,
+        'name': dataset_dict['name'],
+        'operation_id': get_mandatory_text_node(et, 'operationID'),
+    }
+
+    return dataset_info
 
 
 def populate_dataset_dict_from_xml(et):
     # Extract key metadata
     dataset_dict = {}
-    dataset_dict['title'] = join_lines(et.find('.//mapdata/title').text)
+    dataset_dict['title'] = join_lines(get_text_node(et, 'title'))
 
-    map_id = et.find('.//mapdata/ref').text
-    operation_id = et.find('.//mapdata/operationID').text
-    dataset_dict['name'] = slugify('%s %s' % (operation_id, map_id))
+    product_type = get_text_node(et, 'productType')
+    operation_id = get_mandatory_text_node(et, 'operationID')
+    map_number = get_mandatory_text_node(et, 'mapNumber')
+    version_text = get_mandatory_text_node(et, 'versionNumber')
 
-    theme = et.find('.//mapdata/theme').text
-    if theme in PRODUCT_THEMES:
-        dataset_dict['product_themes'] = [theme]
-    else:
-        log.error('Product theme "%s" not defined in PRODUCT_THEMES' % theme)
+    try:
+        version_number = int(version_text)
+    except ValueError:
+        raise MapPackageException(_("Version number '{version_number}' must be an integer".format(
+            version_number=version_text)))
 
-    dataset_dict['notes'] = join_lines(et.find('.//mapdata/summary').text)
+    # If set, set the dataset type to the the MapAction productType
+    # This will select the schema applied to the dataset
+    if product_type is not None:
+        dataset_dict['type'] = product_type
+
+    dataset_dict['name'] = slugify('%s %s v%s' % (operation_id,
+                                                  map_number,
+                                                  version_number))
+
+    dataset_dict['version'] = version_number
+
+    for theme in et.findall('.//mapdata//theme'):
+        if theme.text in PRODUCT_THEMES:
+            dataset_dict.setdefault('product_themes', []).append(theme.text)
+        else:
+            log.error(
+                "Product theme '{0}' not defined in PRODUCT_THEMES".format(
+                    theme.text))
+
+    summary = get_text_node(et, 'summary')
+    dataset_dict['notes'] = join_lines(summary)
+
     dataset_dict['extras'] = [
         {'key': k, 'value': v} for (k, v) in
         map_metadata_to_ckan_extras(et).items()
     ]
 
     return dataset_dict
+
+
+def get_mandatory_text_node(et, name):
+    text = get_text_node(et, name)
+
+    if text is None:
+        raise MapPackageException(_("Unable to find mandatory field '{name}' in metadata".format(name=name)))
+
+    return text
+
+
+def get_text_node(et, name):
+    element = et.find('.//mapdata/{0}'.format(name))
+    if element is not None:
+        return element.text
+
+    return None
